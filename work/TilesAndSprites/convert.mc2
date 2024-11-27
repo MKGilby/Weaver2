@@ -1,0 +1,8 @@
+r png data\sprites.png 1
+r json data\anims.json 1
+m setcolorkey 255 0 255 1
+w png sprites.png 1
+
+r png data\tiles.png 1
+w png tiles.png 1
+ 
