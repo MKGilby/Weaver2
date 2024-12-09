@@ -102,10 +102,11 @@
     "Width" : 32,
     "Height" : 32,
     "HotPoint" : { "x" : 0, "y" : 0 },
-    "FPS" : 1,
+    "FPS" : 25,
     "LoopDelay" : 0,
     "StartFrame" : 0,
-    "Paused" : true,
+    "Paused" : false,
+    "Looped" : true,
     "Frames" : [
       { "x" : 128, "y" : 32 },
       { "x" : 160, "y" : 32 }
