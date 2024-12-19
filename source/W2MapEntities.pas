@@ -85,6 +85,16 @@ type
     fPixelMoveRemainingTime:double;
   end;
 
+  { TExit }
+
+  TExit=class(TMapEntity)
+    constructor Create(ipX,ipY:integer);
+    destructor Destroy; override;
+    procedure Draw; override;
+  private
+    fAnimation:TAnimation;
+  end;
+
 implementation
 
 uses W2Shared, mk_sdl2, sdl2;
@@ -164,6 +174,7 @@ begin
   fColor:=iColor;
   fMap:=iMap;
   fAnimation:=MM.Animations.ItemByName[Format('Block%d',[fColor])].SpawnAnimation;
+  inc(BlockCount);
 end;
 
 destructor TBlock.Destroy;
@@ -185,8 +196,10 @@ begin
       FreeAndNil(fAnimation);
       if fColor>0 then
         fAnimation:=MM.Animations.ItemByName[Format('Block%d',[fColor])].SpawnAnimation
-      else
+      else begin
         fMap.Tiles[fpX,fpY]:=TILE_FLOOR;
+        dec(BlockCount);
+      end;
     end;
   end;
 end;
@@ -388,6 +401,28 @@ end;
 
 {$endregion}
 
+{ TExit }
+{$region /fold}
+
+constructor TExit.Create(ipX,ipY:integer);
+begin
+  Inherited Create(ipX,ipY);
+  fAnimation:=MM.Animations.ItemByName['Exit'].SpawnAnimation;
+end;
+
+destructor TExit.Destroy;
+begin
+  fAnimation.Free;
+end;
+
+procedure TExit.Draw;
+begin
+  if BlockCount=0 then begin
+    fAnimation.PutFrame(fX+MAPLEFT,fY+MAPTOP);
+  end;
+end;
+
+{$endregion}
 
 end.
 

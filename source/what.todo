@@ -1,4 +1,7 @@
-0004Weaver2 Remake
+0007Weaver2 Remake
 0001* 2024121920241219Draw player over Zapper
 0002* 2024121920241219Change player color as moves over color circles
 0003* 2024121920241219Destroy blocks as player touches them
+0004* 2024121920241219Show exit tiles when all blocks are destroyed
+0005  20241219        Proceed to next map when moving onto exit tile
+0006  20241219        Draw teleport tile (2 variants at least)

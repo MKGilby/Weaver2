@@ -16,7 +16,6 @@ const
   TILESIZE=32;
   MAPWIDTH=15;
   MAPHEIGHT=12;
-//  MAPLEFT=(WINDOWWIDTH-(TILEWIDTH*MAPWIDTH)) div 2;
   MAPLEFT=8;
   MAPTOP=(WINDOWHEIGHT-(TILESIZE*MAPHEIGHT)) div 2;
 
@@ -30,7 +29,7 @@ const
   LOADED_TILE_COLOR1=ord('A');
   LOADED_TILE_COLOR2=ord('B');
   LOADED_TILE_COLOR3=ord('C');
-  LOADED_TILE_EXIT=ord('e');
+  LOADED_TILE_EXIT=ord('x');
   LOADED_TILE_ZAPPER1=ord('X');
   LOADED_TILE_ZAPPER2=ord('Y');
   LOADED_TILE_ZAPPER3=ord('Z');
@@ -65,28 +64,11 @@ const
   ZAPPERLIFECYCLE=3;
 
   PLAYERSPEED=3;  // tiles / sec
-//  PLAYERVELOCITYX=TILEWIDTH*PLAYERSPEED;   // pixels / sec
-//  PLAYERVELOCITYY=TILEHEIGHT*PLAYERSPEED;   // pixels / sec
-
   TIMEPERPIXEL=1/(TILESIZE*PLAYERSPEED);
 
   // If a game cycle uses more than this seconds, it will be feed to objects by
   // this amount. Don't make it higher than TIMEPERPIXEL!
   MAXTIMESLICE=1/128;
-
-
-{  BLOCKCOLOR1=$10;
-  BLOCKCOLOR1MASK=$7FFFFFFF xor BLOCKCOLOR1;
-  BLOCKCOLOR2=$20;
-  BLOCKCOLOR2MASK=$7FFFFFFF xor BLOCKCOLOR2;
-  BLOCKCOLOR3=$40;
-  BLOCKCOLOR3MASK=$7FFFFFFF xor BLOCKCOLOR3;
-  BLOCKCOLORS=BLOCKCOLOR1 or BLOCKCOLOR2 or BLOCKCOLOR3;
-
-  COLOR1=$100;
-  COLOR2=$200;
-  COLOR3=$300;}
-
 
 
 var
@@ -95,7 +77,7 @@ var
   MonoColor32:uint32;
   MonoColorR,MonoColorG,MonoColorB:byte;
   Entities:TMapEntities;
-
+  BlockCount:integer;
 
 procedure LoadAssets;
 procedure FreeAssets;
@@ -300,9 +282,6 @@ begin
       Atlas.TextureAtlas.RecolorRGB(MonoColorR,MonoColorG,MonoColorB);
       MM.AddImage(Atlas.TextureAtlas,'Sprites');
       Atlas.FreeImage:=false;
-//      for i:=0 to Atlas.TextureAtlas.Animations.Count-1 do
-//        TTimeBasedAnimationData(Atlas.TextureAtlas.Animations[i]).LogData;
-//      Atlas.TextureAtlas.WriteFile('atlas.png','PNG');
     finally
       Atlas.Free
     end;

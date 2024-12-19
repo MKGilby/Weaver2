@@ -38,6 +38,7 @@ begin
   fMap:=iMap;
   Entities:=TMapEntities.Create;
   CreateBack;
+  BlockCount:=0;
   for y:=-1 to MAPHEIGHT do
     for x:=-1 to MAPWIDTH do begin
       case fMap.OrigTiles[x,y] of
@@ -86,6 +87,10 @@ begin
           fMap.Tiles[x,y]:=TILE_ZAPPER;
           Entities.Add(TZapper.Create(x,y,'10'));
         end;
+        LOADED_TILE_EXIT:begin
+          fMap.Tiles[x,y]:=TILE_EXIT;
+          Entities.Add(TExit.Create(x,y));
+        end;
       end;
     end;
   Entities.Add(TPlayer.Create(fMap));
@@ -111,7 +116,7 @@ begin
     pre:=now;
     SDL_SetRenderDrawColor(PrimaryWindow.Renderer,0,0,0,255);
     SDL_RenderClear(PrimaryWindow.Renderer);
-//    MM.Fonts.OutText(#1'MAP : '#0'01',568,128,1);
+    MM.Fonts.OutText(#1'BLOCKS: '#0+inttostr(BlockCount),568,128,1);
 
     PutTexture(MAPLEFT-8,MAPTOP-8,fBack);
     Entities.Draw;

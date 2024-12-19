@@ -5,6 +5,9 @@ Original version Copyright 1990 '64er
 
 This version Copyright 2024 MKSZTSZ
 
+## 2024.12.19 - Build 4
+- Exit appears when all blocks are destroyed.
+
 ## 2024.12.19 - Build 3
 - Player can pick up color by going over "colored" circles.
 - Blocks are destroyed if touched by appropriate color.
