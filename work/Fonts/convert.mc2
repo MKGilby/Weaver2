@@ -1,0 +1,7 @@
+r png font1_.png 1
+m setcolorkey 32 80 216 1
+w png font1.png 1
+
+r png font2_.png 1
+m setcolorkey 32 80 216 1
+w png font2.png 1

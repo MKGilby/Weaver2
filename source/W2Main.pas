@@ -85,7 +85,7 @@ var Map:TMap;Play1Map:TPlay1Map;
 begin
   Map:=TMap.Create;
   try
-    Map.LoadFromFile('01.json');
+    Map.LoadFromFile(1);
     Play1Map:=TPlay1Map.Create(Map);
     try
       Play1Map.Run;

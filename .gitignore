@@ -37,7 +37,7 @@ backup/
 *.pas;9
 *.log
 test/
-_release/
+release/
 *.obj
 tools/MADrepo.txt
 BurdockPaint.ini

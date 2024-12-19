@@ -5,6 +5,11 @@ Original version Copyright 1990 '64er
 
 This version Copyright 2024 MKSZTSZ
 
+## 2024.12.19 - Build 2
+- Player appears.
+- Player can move around and bounces back from objects.
+- Added font, but not yet used.
+
 ## 2024.12.09 - Build 1
 - First map appears (in glorious amber color).
 - Zappers zaps (graphically).

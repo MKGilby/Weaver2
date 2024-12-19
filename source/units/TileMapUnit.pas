@@ -25,7 +25,7 @@
       * Tiles is the default property
    1.03: Gilby - 2015.10.26
       + OriginX and OriginY property 
-        It shows the map's top-left corner. So if origin is (-2,1) and you 
+        It shows the map's top-left corner. So if origin is (-2,-1) and you 
         issue Get[Orig]Tile(0,0), you will get the tile at (2,1) from the map.
         It is useful for offscreen borders.
    1.04: Gilby - 2016.01.27

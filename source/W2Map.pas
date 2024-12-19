@@ -14,12 +14,14 @@ type
   TMap=class(TTileMap)
     constructor Create;
     destructor Destroy; override;
-    procedure LoadFromFile(iFilename:string);
+    procedure LoadFromFile(pMapNo:integer);
   private
     fPlayerStartX,fPlayerStartY:integer;
+    fMapNo:integer;
   public
     property PlayerStartX:integer read fPlayerStartX;
     property PlayerStartY:integer read fPlayerStartY;
+    property MapNo:integer read fMapNo;
   end;
 
 implementation
@@ -31,12 +33,20 @@ uses MKStream, W2Shared;
 constructor TMap.Create;
 var i,j:integer;
 begin
-  inherited Create(MAPWIDTH,MAPHEIGHT);
-  for j:=0 to MAPHEIGHT-1 do
-    for i:=0 to MAPWIDTH-1 do
-      OrigTiles[i,j]:=LOADED_TILE_FLOOR;
+  inherited Create(MAPWIDTH+2,MAPHEIGHT+2);
+  for j:=0 to Height-1 do
+    for i:=0 to Width-1 do
+      if (i=0) or (j=0) or (i=Width-1) or (j=Height-1) then
+        OrigTiles[i,j]:=LOADED_TILE_WALL
+      else
+        OrigTiles[i,j]:=LOADED_TILE_FLOOR;
+
+  OriginX:=-1;
+  OriginY:=-1;
   fPlayerStartX:=0;
   fPlayerStartY:=0;
+  fMapNo:=0;
+  LogContent('---- MAP Data follows:');
 end;
 
 destructor TMap.Destroy;
@@ -44,7 +54,7 @@ begin
   inherited Destroy;
 end;
 
-procedure TMap.LoadFromFile(iFilename:string);
+procedure TMap.LoadFromFile(pMapNo:integer);
 var J:TJSONData;Xs:TStream;JA:TJSONArray;x,y:integer;s:string;
 
   function max(i1,i2:integer):integer; inline;
@@ -53,7 +63,7 @@ var J:TJSONData;Xs:TStream;JA:TJSONArray;x,y:integer;s:string;
   end;
 
 begin
-  Xs:=MKStreamOpener.OpenStream(iFilename);
+  Xs:=MKStreamOpener.OpenStream(format(MAPFILEFORMAT,[pMapNo]));
   try
     J:=GetJSON(Xs);
   finally

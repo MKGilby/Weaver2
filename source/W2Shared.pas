@@ -4,20 +4,26 @@ unit W2Shared;
 
 interface
 
-uses sdl2, MediaManagerUnit;
+uses sdl2, MediaManagerUnit, W2MapEntities;
 
 const
   WINDOWCAPTION='Weaver 2 V%s (%s)';
   WINDOWWIDTH=640;
   WINDOWHEIGHT=400;
   DATAFILENAME='Weaver2.data';
+  MAPFILEFORMAT='map%.2d.json';
 
-  TILEWIDTH=32;
-  TILEHEIGHT=32;
+  TILESIZE=32;
   MAPWIDTH=15;
   MAPHEIGHT=12;
-  MAPLEFT=(WINDOWWIDTH-(TILEWIDTH*MAPWIDTH)) div 2;
-  MAPTOP=(WINDOWHEIGHT-(TILEHEIGHT*MAPHEIGHT)) div 2;
+//  MAPLEFT=(WINDOWWIDTH-(TILEWIDTH*MAPWIDTH)) div 2;
+  MAPLEFT=8;
+  MAPTOP=(WINDOWHEIGHT-(TILESIZE*MAPHEIGHT)) div 2;
+
+  DIRECTION_UP=1;
+  DIRECTION_RIGHT=2;
+  DIRECTION_DOWN=3;
+  DIRECTION_LEFT=4;
 
   LOADED_TILE_FLOOR=ord('.');
   LOADED_TILE_WALL=ord('#');
@@ -51,8 +57,22 @@ const
   TILE_ZAPPER=5;
   TILE_BLOCK=6;
 
+  COLOR1=1;
+  COLOR2=2;
+  COLOR3=4;
+
   ZAPPERLIFECYCLE=3;
-  MAXTIMESLICE=1/10;
+
+  PLAYERSPEED=3;  // tiles / sec
+//  PLAYERVELOCITYX=TILEWIDTH*PLAYERSPEED;   // pixels / sec
+//  PLAYERVELOCITYY=TILEHEIGHT*PLAYERSPEED;   // pixels / sec
+
+  TIMEPERPIXEL=1/(TILESIZE*PLAYERSPEED);
+
+  // If a game cycle uses more than this seconds, it will be feed to objects by
+  // this amount. Don't make it higher than TIMEPERPIXEL!
+  MAXTIMESLICE=1/128;
+
 
 {  BLOCKCOLOR1=$10;
   BLOCKCOLOR1MASK=$7FFFFFFF xor BLOCKCOLOR1;
@@ -73,6 +93,8 @@ var
   MM:TMediaManager;
   MonoColor32:uint32;
   MonoColorR,MonoColorG,MonoColorB:byte;
+  Entities:TMapEntities;
+
 
 procedure LoadAssets;
 procedure FreeAssets;
@@ -90,20 +112,20 @@ procedure CreateAnim1(
             pAtlas:TTextureAtlasGenerator);
 var
   Target,TargetAnim:TARGBImage;
-  grid:array[0..TILEWIDTH-1,0..TILEHEIGHT-1] of integer;
+  grid:array[0..TILESIZE-1,0..TILESIZE-1] of integer;
   i,j,x,y:integer;
   tmpA:TTimeBasedAnimationData;
 begin
   grid[0,0]:=0;
   fillchar(grid,sizeof(grid),0);
-  Target:=TARGBImage.Create(TILEWIDTH,TILEHEIGHT);
+  Target:=TARGBImage.Create(TILESIZE,TILESIZE);
   try
     with pSourceImage.Animations.ItemByName[pTargetBlockAnimName].Frames[0] do
       pSourceImage.CopyTo(Left,Top,Width,Height,0,0,Target);
 
-    TargetAnim:=TARGBImage.Create(TILEWIDTH*pSteps,TILEHEIGHT);
+    TargetAnim:=TARGBImage.Create(TILESIZE*pSteps,TILESIZE);
     try
-      tmpA:=TTimeBasedAnimationData.Create(TILEWIDTH,TILEHEIGHT);
+      tmpA:=TTimeBasedAnimationData.Create(TILESIZE,TILESIZE);
       tmpA.Name:=pTargetAnimName;
       tmpA.FPS:=pSteps;
       tmpA.Looped:=false;
@@ -116,16 +138,16 @@ begin
           with pSourceImage.Animations.ItemByName[pSourceBlockAnimName].Frames[0] do
             pSourceImage.CopyTo(Left,Top,Width,Height,0,0,TargetAnim)
         else
-          TargetAnim.CopyTo((i-1)*TILEWIDTH,0,TILEWIDTH,TILEHEIGHT,i*TILEWIDTH,0,TargetAnim);
-        for j:=0 to (TILEWIDTH*TILEHEIGHT div 2) div pSteps-1 do begin
+          TargetAnim.CopyTo((i-1)*TILESIZE,0,TILESIZE,TILESIZE,i*TILESIZE,0,TargetAnim);
+        for j:=0 to (TILESIZE*TILESIZE div 2) div pSteps-1 do begin
           repeat
-            x:=random(TILEWIDTH) div 2;
-            y:=random(TILEHEIGHT);
+            x:=random(TILESIZE) div 2;
+            y:=random(TILESIZE);
           until grid[x,y]=0;
           grid[x,y]:=1;
-          Target.CopyTo(x,y,1,1,i*TILEWIDTH+x,y,TargetAnim);
+          Target.CopyTo(x,y,1,1,i*TILESIZE+x,y,TargetAnim);
         end;
-        tmpA.AddFrame(i*TILEWIDTH,0);
+        tmpA.AddFrame(i*TILESIZE,0);
       end;
       TargetAnim.Animations.AddObject(pTargetAnimName,tmpA);
 //      TargetAnim.WriteFile(pTargetAnimName+'.png','PNG');
@@ -147,20 +169,20 @@ procedure CreateAnim2(
             pAtlas:TTextureAtlasGenerator);
 var
   Target,TargetAnim:TARGBImage;
-  grid:array[0..TILEWIDTH-1,0..TILEHEIGHT-1] of integer;
+  grid:array[0..TILESIZE-1,0..TILESIZE-1] of integer;
   i,j,x,y:integer;
   tmpA:TTimeBasedAnimationData;
 begin
   grid[0,0]:=0;
   fillchar(grid,sizeof(grid),0);
-  Target:=TARGBImage.Create(TILEWIDTH,TILEHEIGHT);
+  Target:=TARGBImage.Create(TILESIZE,TILESIZE);
   try
     with pSourceImage.Animations.ItemByName[pTargetBlockAnimName].Frames[0] do
       pSourceImage.CopyTo(Left,Top,Width,Height,0,0,Target);
 
-    TargetAnim:=TARGBImage.Create(TILEWIDTH*pSteps,TILEHEIGHT);
+    TargetAnim:=TARGBImage.Create(TILESIZE*pSteps,TILESIZE);
     try
-      tmpA:=TTimeBasedAnimationData.Create(TILEWIDTH,TILEHEIGHT);
+      tmpA:=TTimeBasedAnimationData.Create(TILESIZE,TILESIZE);
       tmpA.Name:=pTargetAnimName;
       tmpA.FPS:=pSteps;
       tmpA.Looped:=false;
@@ -173,16 +195,16 @@ begin
           with pSourceImage.Animations.ItemByName[pSourceBlockAnimName].Frames[0] do
             pSourceImage.CopyTo(Left,Top,Width,Height,0,0,TargetAnim)
         else
-          TargetAnim.CopyTo((i-1)*TILEWIDTH,0,TILEWIDTH,TILEHEIGHT,i*TILEWIDTH,0,TargetAnim);
-        for j:=0 to (TILEWIDTH*TILEHEIGHT div 2) div pSteps-1 do begin
+          TargetAnim.CopyTo((i-1)*TILESIZE,0,TILESIZE,TILESIZE,i*TILESIZE,0,TargetAnim);
+        for j:=0 to (TILESIZE*TILESIZE div 2) div pSteps-1 do begin
           repeat
-            x:=random(TILEWIDTH) div 2+TILEWIDTH div 2;
-            y:=random(TILEHEIGHT);
+            x:=random(TILESIZE) div 2+TILESIZE div 2;
+            y:=random(TILESIZE);
           until grid[x,y]=0;
           grid[x,y]:=1;
-          Target.CopyTo(x,y,1,1,i*TILEWIDTH+x,y,TargetAnim);
+          Target.CopyTo(x,y,1,1,i*TILESIZE+x,y,TargetAnim);
         end;
-        tmpA.AddFrame(i*TILEWIDTH,0);
+        tmpA.AddFrame(i*TILESIZE,0);
       end;
       TargetAnim.Animations.AddObject(pTargetAnimName,tmpA);
 //      TargetAnim.WriteFile(pTargetAnimName+'.png','PNG');
@@ -204,16 +226,16 @@ procedure CreateAnim3(
             pAtlas:TTextureAtlasGenerator);
 var
   TargetAnim:TARGBImage;
-  grid:array[0..TILEWIDTH-1,0..TILEHEIGHT-1] of integer;
+  grid:array[0..TILESIZE-1,0..TILESIZE-1] of integer;
   i,j,x,y:integer;
   tmpA:TTimeBasedAnimationData;
 begin
   grid[0,0]:=0;
   fillchar(grid,sizeof(grid),0);
 
-  TargetAnim:=TARGBImage.Create(TILEWIDTH*pSteps,TILEHEIGHT);
+  TargetAnim:=TARGBImage.Create(TILESIZE*pSteps,TILESIZE);
   try
-    tmpA:=TTimeBasedAnimationData.Create(TILEWIDTH,TILEHEIGHT);
+    tmpA:=TTimeBasedAnimationData.Create(TILESIZE,TILESIZE);
     tmpA.Name:=pTargetAnimName;
     tmpA.FPS:=pSteps;
     tmpA.Looped:=false;
@@ -226,16 +248,16 @@ begin
         with pSourceImage.Animations.ItemByName[pSourceAnimName].Frames[0] do
           pSourceImage.CopyTo(Left,Top,Width,Height,0,0,TargetAnim)
       else
-        TargetAnim.CopyTo((i-1)*TILEWIDTH,0,TILEWIDTH,TILEHEIGHT,i*TILEWIDTH,0,TargetAnim);
-      for j:=0 to TILEWIDTH*TILEHEIGHT div pSteps-1 do begin
+        TargetAnim.CopyTo((i-1)*TILESIZE,0,TILESIZE,TILESIZE,i*TILESIZE,0,TargetAnim);
+      for j:=0 to TILESIZE*TILESIZE div pSteps-1 do begin
         repeat
-          x:=random(TILEWIDTH);
-          y:=random(TILEHEIGHT);
+          x:=random(TILESIZE);
+          y:=random(TILESIZE);
         until grid[x,y]=0;
         grid[x,y]:=1;
-        TargetAnim.Putpixel(i*TILEWIDTH+x,y,0,0,0,0);
+        TargetAnim.Putpixel(i*TILESIZE+x,y,0,0,0,0);
       end;
-      tmpA.AddFrame(i*TILEWIDTH,0);
+      tmpA.AddFrame(i*TILESIZE,0);
     end;
     TargetAnim.Animations.AddObject(pTargetAnimName,tmpA);
 //    TargetAnim.WriteFile(pTargetAnimName+'.png','PNG');
@@ -285,6 +307,12 @@ begin
   finally
     Sprites.Free;
   end;
+  MM.Load('font1.png','Font1');
+  MM.Fonts['Font1'].SetColor(MonoColorR,MonoColorG,MonoColorB);
+  MM.Fonts['Font1'].SpaceSpace:=6;
+  MM.Load('font2.png','Font2');
+  MM.Fonts['Font2'].SetColor(MonoColorR,MonoColorG,MonoColorB);
+  MM.Fonts['Font2'].SpaceSpace:=6;
 end;
 
 procedure FreeAssets;

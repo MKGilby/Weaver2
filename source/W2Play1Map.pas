@@ -18,7 +18,6 @@ type
   private
     fMap:TMap;
     fBack:TTexture;
-    fEntities:TMapEntities;
     procedure CreateBack;
   end;
 
@@ -37,55 +36,56 @@ constructor TPlay1Map.Create(iMap: TMap);
 var x,y:integer;
 begin
   fMap:=iMap;
-  fEntities:=TMapEntities.Create;
+  Entities:=TMapEntities.Create;
   CreateBack;
-  for y:=0 to MAPHEIGHT-1 do
-    for x:=0 to MAPWIDTH-1 do begin
+  Entities.Add(TPlayer.Create(fMap));
+  for y:=-1 to MAPHEIGHT do
+    for x:=-1 to MAPWIDTH do begin
       case fMap.OrigTiles[x,y] of
         LOADED_TILE_FLOOR:fMap.Tiles[x,y]:=TILE_FLOOR;
         LOADED_TILE_WALL:fMap.Tiles[x,y]:=TILE_WALL or MOVEBLOCKALL;
         LOADED_TILE_BLOCK1:begin
           fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
-          fEntities.Add(TBlock.Create(x,y,1));
+          Entities.Add(TBlock.Create(x,y,COLOR1));
         end;
         LOADED_TILE_BLOCK2:begin
           fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
-          fEntities.Add(TBlock.Create(x,y,2));
+          Entities.Add(TBlock.Create(x,y,COLOR2));
         end;
         LOADED_TILE_BLOCK3:begin
           fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
-          fEntities.Add(TBlock.Create(x,y,3));
+          Entities.Add(TBlock.Create(x,y,COLOR1 or COLOR2));
         end;
         LOADED_TILE_BLOCK4:begin
           fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
-          fEntities.Add(TBlock.Create(x,y,4));
+          Entities.Add(TBlock.Create(x,y,COLOR3));
         end;
         LOADED_TILE_BLOCK5:begin
           fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
-          fEntities.Add(TBlock.Create(x,y,5));
+          Entities.Add(TBlock.Create(x,y,COLOR1 or COLOR3));
         end;
         LOADED_TILE_BLOCK6:begin
           fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
-          fEntities.Add(TBlock.Create(x,y,6));
+          Entities.Add(TBlock.Create(x,y,COLOR2 or COLOR3));
         end;
         LOADED_TILE_COLOR1:fMap.Tiles[x,y]:=TILE_COLOR1;
         LOADED_TILE_COLOR2:fMap.Tiles[x,y]:=TILE_COLOR2;
         LOADED_TILE_COLOR3:fMap.Tiles[x,y]:=TILE_COLOR3;
         LOADED_TILE_ZAPPER1:begin
           fMap.Tiles[x,y]:=TILE_ZAPPER;
-          fEntities.Add(TZapper.Create(x,y,'100'));
+          Entities.Add(TZapper.Create(x,y,'100'));
         end;
         LOADED_TILE_ZAPPER2:begin
           fMap.Tiles[x,y]:=TILE_ZAPPER;
-          fEntities.Add(TZapper.Create(x,y,'010'));
+          Entities.Add(TZapper.Create(x,y,'010'));
         end;
         LOADED_TILE_ZAPPER3:begin
           fMap.Tiles[x,y]:=TILE_ZAPPER;
-          fEntities.Add(TZapper.Create(x,y,'001'));
+          Entities.Add(TZapper.Create(x,y,'001'));
         end;
         LOADED_TILE_ZAPPER4:begin
           fMap.Tiles[x,y]:=TILE_ZAPPER;
-          fEntities.Add(TZapper.Create(x,y,'10'));
+          Entities.Add(TZapper.Create(x,y,'10'));
         end;
       end;
     end;
@@ -95,7 +95,7 @@ end;
 
 destructor TPlay1Map.Destroy;
 begin
-  fEntities.Free;
+  Entities.Free;
   fBack.Free;
   inherited Destroy;
 end;
@@ -109,13 +109,14 @@ begin
   pre:=GetTickCount64;
   repeat
     now:=GetTickCount64;
-    fEntities.Move((now-pre)/1000);
+    Entities.Move((now-pre)/1000);
     pre:=now;
     SDL_SetRenderDrawColor(PrimaryWindow.Renderer,0,0,0,255);
     SDL_RenderClear(PrimaryWindow.Renderer);
+//    MM.Fonts.OutText(#1'MAP : '#0'01',568,128,1);
 
     PutTexture(MAPLEFT-8,MAPTOP-8,fBack);
-    fEntities.Draw;
+    Entities.Draw;
 
     FlipNoLimit;
     HandleMessages;
@@ -143,7 +144,7 @@ var tmpI,tmpT:TARGBImage;i,j,ti:integer;s:string;
 begin
   tmpT:=MM.Images.ItemByName['Tiles'];
   if Assigned(tmpT) then begin
-    tmpI:=TARGBImage.Create(MAPWIDTH*TILEWIDTH+16,MAPHEIGHT*TILEHEIGHT+16);
+    tmpI:=TARGBImage.Create(MAPWIDTH*TILESIZE+16,MAPHEIGHT*TILESIZE+16);
     try
       tmpI.Clear;
       for j:=0 to MAPHEIGHT-1 do
@@ -158,7 +159,7 @@ begin
           end;
           ti:=IndexOfTile(s);
           if (ti>-1) then
-            tmpI.PutImagePart(i*TILEWIDTH+8,j*TILEHEIGHT+8,ti*TILEWIDTH,0,TILEWIDTH,TILEHEIGHT,tmpT);
+            tmpI.PutImagePart(i*TILESIZE+8,j*TILESIZE+8,ti*TILESIZE,0,TILESIZE,TILESIZE,tmpT);
         end;
       tmpI.HLine(0,0,tmpI.Width,MonoColor32);
       tmpI.HLine(1,1,tmpI.Width-2,MonoColor32);
