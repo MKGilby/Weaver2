@@ -46,7 +46,7 @@ begin
   fPlayerStartX:=0;
   fPlayerStartY:=0;
   fMapNo:=0;
-  LogContent('---- MAP Data follows:');
+//  LogContent('---- MAP Data follows:');
 end;
 
 destructor TMap.Destroy;

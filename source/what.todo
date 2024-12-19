@@ -1,4 +1,4 @@
 0004Weaver2 Remake
-0001  20241219        Draw player over Zapper
-0002  20241219        Change player color as moves over color circles
-0003  20241219        Destroy blocks as player touches them
+0001* 2024121920241219Draw player over Zapper
+0002* 2024121920241219Change player color as moves over color circles
+0003* 2024121920241219Destroy blocks as player touches them

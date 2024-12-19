@@ -40,13 +40,15 @@ type
   { TBlock }
 
   TBlock=class(TMapEntity)
-    constructor Create(ipX,ipY,iColor:integer);
+    constructor Create(ipX,ipY,iColor:integer;iMap:TMap);
     destructor Destroy; override;
     procedure Draw; override;
+    procedure Move(pTimeUsed:double); override;
     // Block has been hit by player holding pColor
     procedure Hit(pColor:integer);
   private
     fColor:integer;
+    fMap:TMap;
     fAnimation:TAnimation;
   end;
 
@@ -156,11 +158,12 @@ end;
 { TBlock }
 {$region /fold}
 
-constructor TBlock.Create(ipX,ipY,iColor:integer);
+constructor TBlock.Create(ipX,ipY,iColor:integer; iMap:TMap);
 begin
   inherited Create(ipX,ipY);
   fColor:=iColor;
-  fAnimation:=MM.Animations.ItemByName[Format('Block%d',[iColor])].SpawnAnimation;
+  fMap:=iMap;
+  fAnimation:=MM.Animations.ItemByName[Format('Block%d',[fColor])].SpawnAnimation;
 end;
 
 destructor TBlock.Destroy;
@@ -174,10 +177,35 @@ begin
   if Assigned(fAnimation) then fAnimation.PutFrame(fX+MAPLEFT,fY+MAPTOP);
 end;
 
+procedure TBlock.Move(pTimeUsed:double);
+begin
+  if Assigned(fAnimation) then begin
+    fAnimation.Animate(pTimeUsed);
+    if fAnimation.Timer.Finished then begin
+      FreeAndNil(fAnimation);
+      if fColor>0 then
+        fAnimation:=MM.Animations.ItemByName[Format('Block%d',[fColor])].SpawnAnimation
+      else
+        fMap.Tiles[fpX,fpY]:=TILE_FLOOR;
+    end;
+  end;
+end;
+
 procedure TBlock.Hit(pColor:integer);
+var s:string;
 begin
   if (fColor and pColor)<>0 then begin
+    FreeAndNil(fAnimation);
     // Start animation here
+    s:='Block'+chr(fColor+48);
+    if fColor=pColor then
+      s:=s+'Destroy'
+    else
+      s:=s+'to'+chr(fColor xor pColor+48);
+    fAnimation:=MM.Animations.ItemByName[s].SpawnAnimation;
+    fAnimation.Name:=s;
+    fAnimation.Timer.Paused:=false;
+    fColor:=(fColor xor pColor) and fColor;
   end;
 end;
 
@@ -247,7 +275,7 @@ end;
 procedure TPlayer.Draw;
 begin
   if trunc(fShield*40) mod 10<5 then
-    fAnimation.PutFrame(fX+MAPLEFT,fY+MAPTOP,fColor);
+    fAnimation.PutFrame(fX+MAPLEFT,fY+MAPTOP,fColor-1);
 end;
 
 procedure TPlayer.Move(pTimeUsed:double);
@@ -303,7 +331,7 @@ begin
         dirs[DIRECTION_UP]:='B';
     end else
       dirs[DIRECTION_UP]:='F';
-    if (tile=TILE_BLOCK) then TBlock(Entities.EntityAt[pX,(fY+31) div TILESIZE-1]).Hit(fColor);
+    if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX,(fY+31) div TILESIZE-1]).Hit(fColor);
   end;
   if k[DIRECTION_RIGHT] then begin
     tile:=fMap.Tiles[pX+1,pY];
@@ -312,7 +340,7 @@ begin
         dirs[DIRECTION_RIGHT]:='B';
     end else
       dirs[DIRECTION_RIGHT]:='F';
-    if (tile=TILE_BLOCK) then TBlock(Entities.EntityAt[pX+1,pY]).Hit(fColor);
+    if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX+1,pY]).Hit(fColor);
   end;
   if k[DIRECTION_DOWN] then begin
     tile:=fMap.Tiles[pX,pY+1];
@@ -321,7 +349,7 @@ begin
         dirs[DIRECTION_DOWN]:='B';
     end else
       dirs[DIRECTION_DOWN]:='F';
-    if (tile=TILE_BLOCK) then TBlock(Entities.EntityAt[pX,pY+1]).Hit(fColor);
+    if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX,pY+1]).Hit(fColor);
   end;
   if k[DIRECTION_LEFT] then begin
     tile:=fMap.Tiles[(fX+31) div TILESIZE-1,pY];
@@ -330,7 +358,8 @@ begin
         dirs[DIRECTION_LEFT]:='B';
     end else
       dirs[DIRECTION_LEFT]:='F';
-    if (tile=TILE_BLOCK) then TBlock(Entities.EntityAt[(fX+31) div TILESIZE-1,pY]).Hit(fColor);
+    if (tile and TILE_MASK=TILE_BLOCK) then
+      TBlock(Entities.EntityAt[(fX+31) div TILESIZE-1,pY]).Hit(fColor);
   end;
   fDir:=pos('F',dirs);
   if fDir<>0 then begin
@@ -344,6 +373,17 @@ begin
     fDir:=pos('B',dirs);
     if fDir>0 then fDir:=((fDir+1) and 3)+1;  // Bounce: 1->3 2->4 3->1 4->2
   end;
+
+  if (fX mod 32=0) and (fY mod 32=0) then begin
+    fpX:=fX div TILESIZE;
+    fpY:=fY div TILESIZE;
+    case fMap.Tiles[fpX,fpY] of
+      TILE_COLOR1:fColor:=COLOR1;
+      TILE_COLOR2:fColor:=COLOR2;
+      TILE_COLOR3:fColor:=COLOR3;
+    end;
+  end;
+
 end;
 
 {$endregion}

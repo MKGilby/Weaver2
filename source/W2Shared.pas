@@ -48,14 +48,15 @@ const
   MOVEBLOCKFROMRIGHT=$0200;
   MOVEBLOCKALL=MOVEBLOCKFROMABOVE or MOVEBLOCKFROMBELOW or MOVEBLOCKFROMLEFT or MOVEBLOCKFROMRIGHT;
 
+  TILE_MASK=$ff;
   TILE_FLOOR=0;
-  TILE_WALL=$1000;
-  TILE_COLOR1=1;
-  TILE_COLOR2=2;
-  TILE_COLOR3=3;
-  TILE_EXIT=4;
-  TILE_ZAPPER=5;
-  TILE_BLOCK=6;
+  TILE_WALL=1;
+  TILE_COLOR1=2;
+  TILE_COLOR2=3;
+  TILE_COLOR3=4;
+  TILE_EXIT=5;
+  TILE_ZAPPER=6;
+  TILE_BLOCK=7;
 
   COLOR1=1;
   COLOR2=2;
@@ -269,6 +270,7 @@ end;
 
 procedure LoadAssets;
 var Atlas:TTextureAtlasGenerator;Sprites:TARGBImage;
+//  i:integer;
 begin
   MonoColor32:=$FFFF8000;  // Amber
 //  MonoColor32:=$FF00FF00;  // Green
@@ -282,8 +284,6 @@ begin
   MM.Images.ItemByName['Tiles'].RecolorRGB(MonoColorR,MonoColorG,MonoColorB);
   Sprites:=TARGBImage.Create('sprites.png');
   try
-//  MM.Load('sprites.png','Sprites');
-//  MM.Images.ItemByName['Sprites'].RecolorRGB(MonoColorR,MonoColorG,MonoColorB);
     Atlas:=TTextureAtlasGenerator.Create(1024,1024,1);
     try
       Atlas.AddImage(Sprites);
@@ -300,6 +300,8 @@ begin
       Atlas.TextureAtlas.RecolorRGB(MonoColorR,MonoColorG,MonoColorB);
       MM.AddImage(Atlas.TextureAtlas,'Sprites');
       Atlas.FreeImage:=false;
+//      for i:=0 to Atlas.TextureAtlas.Animations.Count-1 do
+//        TTimeBasedAnimationData(Atlas.TextureAtlas.Animations[i]).LogData;
 //      Atlas.TextureAtlas.WriteFile('atlas.png','PNG');
     finally
       Atlas.Free

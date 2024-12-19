@@ -38,7 +38,6 @@ begin
   fMap:=iMap;
   Entities:=TMapEntities.Create;
   CreateBack;
-  Entities.Add(TPlayer.Create(fMap));
   for y:=-1 to MAPHEIGHT do
     for x:=-1 to MAPWIDTH do begin
       case fMap.OrigTiles[x,y] of
@@ -46,27 +45,27 @@ begin
         LOADED_TILE_WALL:fMap.Tiles[x,y]:=TILE_WALL or MOVEBLOCKALL;
         LOADED_TILE_BLOCK1:begin
           fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
-          Entities.Add(TBlock.Create(x,y,COLOR1));
+          Entities.Add(TBlock.Create(x,y,COLOR1,fMap));
         end;
         LOADED_TILE_BLOCK2:begin
           fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
-          Entities.Add(TBlock.Create(x,y,COLOR2));
+          Entities.Add(TBlock.Create(x,y,COLOR2,fMap));
         end;
         LOADED_TILE_BLOCK3:begin
           fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
-          Entities.Add(TBlock.Create(x,y,COLOR1 or COLOR2));
+          Entities.Add(TBlock.Create(x,y,COLOR1 or COLOR2,fMap));
         end;
         LOADED_TILE_BLOCK4:begin
           fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
-          Entities.Add(TBlock.Create(x,y,COLOR3));
+          Entities.Add(TBlock.Create(x,y,COLOR3,fMap));
         end;
         LOADED_TILE_BLOCK5:begin
           fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
-          Entities.Add(TBlock.Create(x,y,COLOR1 or COLOR3));
+          Entities.Add(TBlock.Create(x,y,COLOR1 or COLOR3,fMap));
         end;
         LOADED_TILE_BLOCK6:begin
           fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
-          Entities.Add(TBlock.Create(x,y,COLOR2 or COLOR3));
+          Entities.Add(TBlock.Create(x,y,COLOR2 or COLOR3,fMap));
         end;
         LOADED_TILE_COLOR1:fMap.Tiles[x,y]:=TILE_COLOR1;
         LOADED_TILE_COLOR2:fMap.Tiles[x,y]:=TILE_COLOR2;
@@ -89,8 +88,7 @@ begin
         end;
       end;
     end;
-
-
+  Entities.Add(TPlayer.Create(fMap));
 end;
 
 destructor TPlay1Map.Destroy;

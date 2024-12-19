@@ -1,3 +1,5 @@
+; Ship animation contains 4 frames but only the first, second and fourth are used
+; for color1, color2 and color3 respectively.
 r png data\sprites.png 1
 r json data\anims.json 1
 m setcolorkey 255 0 255 1

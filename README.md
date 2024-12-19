@@ -5,6 +5,10 @@ Original version Copyright 1990 '64er
 
 This version Copyright 2024 MKSZTSZ
 
+## 2024.12.19 - Build 3
+- Player can pick up color by going over "colored" circles.
+- Blocks are destroyed if touched by appropriate color.
+ 
 ## 2024.12.19 - Build 2
 - Player appears.
 - Player can move around and bounces back from objects.
