@@ -5,6 +5,13 @@ Original version Copyright 1990 '64er
 
 This version Copyright 2024 MKSZTSZ
 
+## 2024.12.20 - Build 5
+- Added teleport graphics.
+- Added second map.
+- Game proceeds to next map when moving onto exit tile. (No transition though.)
+- Teleport works (with 2 sec cooldown).
+- Color circle tile border simplified.
+
 ## 2024.12.19 - Build 4
 - Exit appears when all blocks are destroyed.
 

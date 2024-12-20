@@ -16,7 +16,7 @@ type
     // Move entity by dx,dy tiles
     procedure MoveRel(iDeltaX,iDeltaY:integer);
     procedure Draw; virtual; abstract;
-    procedure Move(pTimeUsed:double); virtual;
+    procedure Move(pElapsedTime:double); virtual;
   private
     fpX,fpY:integer;
     fX,fY:integer;
@@ -29,9 +29,9 @@ type
 
   TMapEntities=class(TFPGObjectList<TMapEntity>)
     procedure Draw;
-    procedure Move(pTimeUsed:double);
+    procedure Move(pElapsedTime:double);
   private
-    procedure MoveEx(pTimeUsed:double);
+    procedure MoveEx(pElapsedTime:double);
     function fGetEntityAt(x,y:integer):TMapEntity;
   public
     property EntityAt[x,y:integer]:TMapEntity read fGetEntityAt;
@@ -43,7 +43,7 @@ type
     constructor Create(ipX,ipY,iColor:integer;iMap:TMap);
     destructor Destroy; override;
     procedure Draw; override;
-    procedure Move(pTimeUsed:double); override;
+    procedure Move(pElapsedTime:double); override;
     // Block has been hit by player holding pColor
     procedure Hit(pColor:integer);
   private
@@ -58,7 +58,7 @@ type
     constructor Create(ipX,ipY:integer;iProgram:string);
     destructor Destroy; override;
     procedure Draw; override;
-    procedure Move(pTimeUsed:double); override;
+    procedure Move(pElapsedTime:double); override;
   private
     fProgram:string;
     fPosition:integer;
@@ -66,16 +66,17 @@ type
     fAnimation:TAnimation;
   end;
 
+  TPlayerExternalState=(psNone,psExit,psDead);
+
   { TPlayer }
 
   TPlayer=class(TMapEntity)
     constructor Create(iMap:TMap);
     destructor Destroy; override;
     procedure Draw; override;
-    procedure Move(pTimeUsed:double); override;
+    procedure Move(pElapsedTime:double); override;
     procedure Move1Pixel;
   private
-    ffX,ffY:double;
     fAnimation:TAnimation;  // a frame for each color
     fMap:TMap;
     fDir:integer;
@@ -83,6 +84,9 @@ type
     fColor:integer;
     fShield:double;
     fPixelMoveRemainingTime:double;
+    fState:TPlayerExternalState;
+  public
+    property State:TPlayerExternalState read fState;
   end;
 
   { TExit }
@@ -95,9 +99,27 @@ type
     fAnimation:TAnimation;
   end;
 
+  { TTeleport }
+
+  TTeleport=class(TMapEntity)
+    constructor Create(ipX,ipY,iGroup:integer;iMap:TMap);
+    destructor Destroy; override;
+    procedure Draw; override;
+    procedure Move(pElapsedTime:double); override;
+    procedure Hit;
+  private
+    fAnimation:TAnimation;
+    fPairX,fPairY:integer;
+    fCoolDown:double;
+    fMap:TMap;
+  public
+    property PairX:integer read fPairX;
+    property PairY:integer read fPairY;
+  end;
+
 implementation
 
-uses W2Shared, mk_sdl2, sdl2;
+uses W2Shared, mk_sdl2, sdl2, Logger;
 
 { TMapEntity }
 {$region /fold}
@@ -120,7 +142,7 @@ begin
   else if (fpY>=MAPHEIGHT) then fpY:=MAPHEIGHT-1;
 end;
 
-procedure TMapEntity.Move(pTimeUsed: double);
+procedure TMapEntity.Move(pElapsedTime: double);
 begin
   { Nothing to do, override if want to do something based on ellapsed time. }
 end;
@@ -136,21 +158,21 @@ begin
     Self[i].Draw;
 end;
 
-procedure TMapEntities.Move(pTimeUsed: double);
+procedure TMapEntities.Move(pElapsedTime: double);
 begin
   // Feed only MAXTIMESLICE a time to entities.
-  while pTimeUsed>MAXTIMESLICE do begin
+  while pElapsedTime>MAXTIMESLICE do begin
     MoveEx(MAXTIMESLICE);
-    pTimeUsed:=pTimeUsed-MAXTIMESLICE;
+    pElapsedTime:=pElapsedTime-MAXTIMESLICE;
   end;
-  MoveEx(pTimeUsed);
+  MoveEx(pElapsedTime);
 end;
 
-procedure TMapEntities.MoveEx(pTimeUsed:double);
+procedure TMapEntities.MoveEx(pElapsedTime:double);
 var i:integer;
 begin
   for i:=0 to Self.Count-1 do
-    Self[i].Move(pTimeUsed);
+    Self[i].Move(pElapsedTime);
 end;
 
 function TMapEntities.fGetEntityAt(x,y:integer):TMapEntity;
@@ -188,10 +210,10 @@ begin
   if Assigned(fAnimation) then fAnimation.PutFrame(fX+MAPLEFT,fY+MAPTOP);
 end;
 
-procedure TBlock.Move(pTimeUsed:double);
+procedure TBlock.Move(pElapsedTime:double);
 begin
   if Assigned(fAnimation) then begin
-    fAnimation.Animate(pTimeUsed);
+    fAnimation.Animate(pElapsedTime);
     if fAnimation.Timer.Finished then begin
       FreeAndNil(fAnimation);
       if fColor>0 then
@@ -249,13 +271,13 @@ begin
     fAnimation.PutFrame(fX+MAPLEFT,fY+MAPTOP);
 end;
 
-procedure TZapper.Move(pTimeUsed: double);
+procedure TZapper.Move(pElapsedTime: double);
 begin
-  fAnimation.Animate(pTimeUsed);
-  if fTimeLeft>pTimeUsed then begin
-    fTimeLeft:=fTimeLeft-pTimeUsed;
+  fAnimation.Animate(pElapsedTime);
+  if fTimeLeft>pElapsedTime then begin
+    fTimeLeft:=fTimeLeft-pElapsedTime;
   end else begin
-    fTimeLeft:=ZAPPERLIFECYCLE-(pTimeUsed-fTimeLeft);
+    fTimeLeft:=ZAPPERLIFECYCLE-(pElapsedTime-fTimeLeft);
     inc(fPosition);
     if fPosition>length(fProgram) then fPosition:=1;
   end;
@@ -268,8 +290,6 @@ end;
 constructor TPlayer.Create(iMap:TMap);
 begin
   inherited Create(iMap.PlayerStartX,iMap.PlayerStartY);
-  ffX:=fX;
-  ffY:=fY;
   fMap:=iMap;
   fDir:=0;
   fNewDir:=0;
@@ -277,6 +297,7 @@ begin
   fAnimation:=MM.Animations.ItemByName['Ship'].SpawnAnimation;
   fShield:=3;
   fPixelMoveRemainingTime:=TIMEPERPIXEL;
+  fState:=psNone;
 end;
 
 destructor TPlayer.Destroy;
@@ -291,21 +312,21 @@ begin
     fAnimation.PutFrame(fX+MAPLEFT,fY+MAPTOP,fColor-1);
 end;
 
-procedure TPlayer.Move(pTimeUsed:double);
+procedure TPlayer.Move(pElapsedTime:double);
 begin
   // If there are remaining shield time, decrease it.
   if fShield>0 then begin
-    fShield:=fShield-pTimeUsed;
+    fShield:=fShield-pElapsedTime;
     if fShield<0 then fShield:=0;  // Handle underflow
   end;
 
   // While ellapsed time greater than remaining time until next pixel move, do pixel move.
-  while pTimeUsed>=fPixelMoveRemainingTime do begin
+  while pElapsedTime>=fPixelMoveRemainingTime do begin
     Move1Pixel;
-    pTimeUsed:=pTimeUsed-fPixelMoveRemainingTime;
+    pElapsedTime:=pElapsedTime-fPixelMoveRemainingTime;
     fPixelMoveRemainingTime:=TIMEPERPIXEL;
   end;
-  fPixelMoveRemainingTime:=fPixelMoveRemainingTime-pTimeUsed;
+  fPixelMoveRemainingTime:=fPixelMoveRemainingTime-pElapsedTime;
 end;
 
 procedure TPlayer.Move1Pixel;
@@ -388,12 +409,18 @@ begin
   end;
 
   if (fX mod 32=0) and (fY mod 32=0) then begin
-    fpX:=fX div TILESIZE;
-    fpY:=fY div TILESIZE;
-    case fMap.Tiles[fpX,fpY] of
+    case fMap.Tiles[fX div TILESIZE,fY div TILESIZE] of
       TILE_COLOR1:fColor:=COLOR1;
       TILE_COLOR2:fColor:=COLOR2;
       TILE_COLOR3:fColor:=COLOR3;
+      TILE_EXIT:if BlockCount=0 then fState:=psExit;
+      TILE_TELEPORT:begin
+                      fpX:=TTeleport(Entities.EntityAt[fX div TILESIZE,fY div TILESIZE]).PairX;
+                      fpY:=TTeleport(Entities.EntityAt[fX div TILESIZE,fY div TILESIZE]).PairY;
+                      fX:=fpX*TILESIZE;
+                      fY:=fpY*TILESIZE;
+                      TTeleport(Entities.EntityAt[fX div TILESIZE,fY div TILESIZE]).Hit;
+                    end;
     end;
   end;
 
@@ -419,6 +446,78 @@ procedure TExit.Draw;
 begin
   if BlockCount=0 then begin
     fAnimation.PutFrame(fX+MAPLEFT,fY+MAPTOP);
+  end;
+end;
+
+{$endregion}
+
+{ TTeleport }
+{$region /fold}
+
+constructor TTeleport.Create(ipX,ipY,iGroup:integer; iMap:TMap);
+
+  // Searches another teleport of same group and puts coords into fPairX/Y.
+  procedure SearchPair(pLoadedTile:integer);
+  var x,y:integer;
+  begin
+    Log.LogDebug(Format('Searching for value: %d',[pLoadedTile]));
+    for y:=0 to iMap.Height-1 do
+      for x:=0 to iMap.Width-1 do
+        if (iMap.OrigTiles[x,y]=pLoadedTile) and ((x<>ipX) or (y<>ipY)) then begin
+          fPairX:=x;
+          fPairY:=y;
+          Log.LogDebug('Found!');
+          exit;
+        end;
+  end;
+
+begin
+  inherited Create(ipX,ipY);
+  fMap:=iMap;
+  iGroup:=iGroup and 1;
+  if iGroup=0 then begin
+    SearchPair(LOADED_TILE_TELEPORT1);
+    fAnimation:=MM.Animations.ItemByName['Teleport1'].SpawnAnimation;
+  end else begin
+    SearchPair(LOADED_TILE_TELEPORT2);
+    fAnimation:=MM.Animations.ItemByName['Teleport2'].SpawnAnimation;
+  end;
+  Log.LogDebug(Format('This: %d,%d    Pair: %d,%d',[ipX,ipY,fPairX,fPairY]));
+  if (fPairY>ipY) or ((fPairY=ipY) and (fPairX>ipX)) then fAnimation.Timer.CurrentFrameIndex:=1;
+  fAnimation.LogData;
+  fCoolDown:=0;
+end;
+
+destructor TTeleport.Destroy;
+begin
+  fAnimation.Free;
+  inherited Destroy;
+end;
+
+procedure TTeleport.Draw;
+begin
+  if fCoolDown=0 then fAnimation.PutFrame(fX+MAPLEFT,fY+MAPTOP);
+end;
+
+procedure TTeleport.Move(pElapsedTime:double);
+begin
+  fAnimation.Animate(pElapsedTime);
+  if fCoolDown>0 then begin
+    fCoolDown:=fCoolDown-pElapsedTime;
+    if fCoolDown<0 then fCoolDown:=0;
+  end;
+  if fCoolDown>0 then
+    fMap.Tiles[pX,pY]:=TILE_FLOOR
+  else
+    fMap.Tiles[pX,pY]:=TILE_TELEPORT;
+end;
+
+procedure TTeleport.Hit;
+begin
+  if fCoolDown=0 then begin
+    fCoolDown:=TELEPORTCOOLDOWN;
+    fMap.Tiles[pX,pY]:=TILE_FLOOR;
+    TTeleport(Entities.EntityAt[fPairX,fPairY]).Hit;
   end;
 end;
 

@@ -18,6 +18,7 @@ type
   private
     fMap:TMap;
     fBack:TTexture;
+    fPlayer:TPlayer;
     procedure CreateBack;
   end;
 
@@ -91,9 +92,18 @@ begin
           fMap.Tiles[x,y]:=TILE_EXIT;
           Entities.Add(TExit.Create(x,y));
         end;
+        LOADED_TILE_TELEPORT1:begin
+          fMap.Tiles[x,y]:=TILE_TELEPORT;
+          Entities.Add(TTeleport.Create(x,y,0,fMap));
+        end;
+        LOADED_TILE_TELEPORT2:begin
+          fMap.Tiles[x,y]:=TILE_TELEPORT;
+          Entities.Add(TTeleport.Create(x,y,1,fMap));
+        end;
       end;
     end;
-  Entities.Add(TPlayer.Create(fMap));
+  fPlayer:=TPlayer.Create(fMap);
+  Entities.Add(fPlayer);
 end;
 
 destructor TPlay1Map.Destroy;
@@ -126,6 +136,7 @@ begin
     if keys[SDL_SCANCODE_ESCAPE] then Result:=-1;
     if controllerbuttons[SDL_CONTROLLER_BUTTON_X] then Result:=-1;
     if Terminate then Result:=-1;
+    if fPlayer.State=psExit then Result:=1;
   until Result<>0;
 
 end;

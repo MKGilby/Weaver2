@@ -81,17 +81,21 @@ begin
 end;
 
 procedure TMain.Run;
-var Map:TMap;Play1Map:TPlay1Map;
+var Map:TMap;Play1Map:TPlay1Map;res,currentmap:integer;
 begin
+  currentmap:=1;
   Map:=TMap.Create;
   try
-    Map.LoadFromFile(1);
-    Play1Map:=TPlay1Map.Create(Map);
-    try
-      Play1Map.Run;
-    finally
-      Play1Map.Free;
-    end;
+    repeat
+      Map.LoadFromFile(currentmap);
+      Play1Map:=TPlay1Map.Create(Map);
+      try
+        res:=Play1Map.Run;
+        if res=1 then inc(currentmap);
+      finally
+        Play1Map.Free;
+      end;
+    until res<0;
   finally
     Map.Free;
   end;
