@@ -80,7 +80,7 @@ type
     fAnimation:TAnimation;  // a frame for each color
     fMap:TMap;
     fDir:integer;
-    fNewDir:integer;
+    fWantedDir:integer;
     fColor:integer;
     fShield:double;
     fPixelMoveRemainingTime:double;
@@ -291,8 +291,7 @@ constructor TPlayer.Create(iMap:TMap);
 begin
   inherited Create(iMap.PlayerStartX,iMap.PlayerStartY);
   fMap:=iMap;
-  fDir:=0;
-  fNewDir:=0;
+  fDir:=DIRECTION_NONE;
   fColor:=COLOR1;
   fAnimation:=MM.Animations.ItemByName['Ship'].SpawnAnimation;
   fShield:=3;
@@ -330,84 +329,119 @@ begin
 end;
 
 procedure TPlayer.Move1Pixel;
-var
-  k:array[1..4] of boolean;
-  dirs:string;
-  tile:integer;
+var newDir:integer;tile:integer;
 begin
-  // First we check keypresses for changing direction
-  k[DIRECTION_UP]:=keys[SDL_SCANCODE_UP];
-  k[DIRECTION_RIGHT]:=keys[SDL_SCANCODE_RIGHT];
-  k[DIRECTION_DOWN]:=keys[SDL_SCANCODE_DOWN];
-  k[DIRECTION_LEFT]:=keys[SDL_SCANCODE_LEFT];
-
-  // Joystick simulation. If opposite direction keys are both pressed clear them.
-  // (Since you cannot turn the joystick left/right or up/down in the same time.)
-  if k[DIRECTION_UP] and k[DIRECTION_DOWN] then begin k[DIRECTION_UP]:=false;k[DIRECTION_DOWN]:=false;end;
-  if k[DIRECTION_RIGHT] and k[DIRECTION_LEFT] then begin k[DIRECTION_RIGHT]:=false;k[DIRECTION_LEFT]:=false;end;
-
-  // Check keys, store available directions in 'k'.
-  k[DIRECTION_UP]:=k[DIRECTION_UP] and ((fDir in [0,DIRECTION_UP,DIRECTION_DOWN]) or ((fDir in [DIRECTION_RIGHT,DIRECTION_LEFT]) and (fX mod TILESIZE=0)));
-  k[DIRECTION_RIGHT]:=k[DIRECTION_RIGHT] and ((fDir in [0,DIRECTION_RIGHT,DIRECTION_LEFT]) or ((fDir in [DIRECTION_UP,DIRECTION_DOWN]) and (fY mod TILESIZE=0)));
-  k[DIRECTION_DOWN]:=k[DIRECTION_DOWN] and ((fDir in [0,DIRECTION_UP,DIRECTION_DOWN]) or ((fDir in [DIRECTION_RIGHT,DIRECTION_LEFT]) and (fX mod TILESIZE=0)));
-  k[DIRECTION_LEFT]:=k[DIRECTION_LEFT] and ((fDir in [0,DIRECTION_RIGHT,DIRECTION_LEFT]) or ((fDir in [DIRECTION_UP,DIRECTION_DOWN]) and (fY mod TILESIZE=0)));
-
-  // If no key pressed the last direction is forced.
-  if not(k[DIRECTION_UP] or k[DIRECTION_RIGHT] or k[DIRECTION_DOWN] or k[DIRECTION_LEFT]) and (fDir in [1..4]) then k[fDir]:=true;
-
   fpX:=fX div TILESIZE;
   fpY:=fY div TILESIZE;
-  dirs:='0000';
-  if k[DIRECTION_UP] then begin
-    tile:=fMap.Tiles[pX,(fY+31) div TILESIZE-1];
-    if (tile and MOVEBLOCKFROMBELOW<>0) then begin
-      if (fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE=0) then
-        dirs[DIRECTION_UP]:='B';
-    end else
-      dirs[DIRECTION_UP]:='F';
-    if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX,(fY+31) div TILESIZE-1]).Hit(fColor);
-  end;
-  if k[DIRECTION_RIGHT] then begin
-    tile:=fMap.Tiles[pX+1,pY];
-    if (tile and MOVEBLOCKFROMLEFT<>0) then begin
-      if (fMap.Tiles[(fX+31) div TILESIZE-1,pY] and MOVEBLOCKFROMRIGHT=0) then
-        dirs[DIRECTION_RIGHT]:='B';
-    end else
-      dirs[DIRECTION_RIGHT]:='F';
-    if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX+1,pY]).Hit(fColor);
-  end;
-  if k[DIRECTION_DOWN] then begin
-    tile:=fMap.Tiles[pX,pY+1];
-    if tile and MOVEBLOCKFROMABOVE<>0 then begin
-      if (fMap.Tiles[pX,(fY+31) div TILESIZE-1] and MOVEBLOCKFROMBELOW=0) then
-        dirs[DIRECTION_DOWN]:='B';
-    end else
-      dirs[DIRECTION_DOWN]:='F';
-    if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX,pY+1]).Hit(fColor);
-  end;
-  if k[DIRECTION_LEFT] then begin
-    tile:=fMap.Tiles[(fX+31) div TILESIZE-1,pY];
-    if tile and MOVEBLOCKFROMRIGHT<>0 then begin
-      if (fMap.Tiles[px+1,pY] and MOVEBLOCKFROMLEFT=0) then
-        dirs[DIRECTION_LEFT]:='B';
-    end else
-      dirs[DIRECTION_LEFT]:='F';
-    if (tile and TILE_MASK=TILE_BLOCK) then
-      TBlock(Entities.EntityAt[(fX+31) div TILESIZE-1,pY]).Hit(fColor);
-  end;
-  fDir:=pos('F',dirs);
-  if fDir<>0 then begin
-    case fDir of
-      DIRECTION_UP:dec(fY);
-      DIRECTION_RIGHT:inc(fX);
-      DIRECTION_DOWN:inc(fY);
-      DIRECTION_LEFT:dec(fX);
-    end;
+  newDir:=0;
+  if keys[SDL_SCANCODE_UP] then begin
+    if fx mod 32=0 then begin
+      tile:=fMap.Tiles[pX,(fY+31) div TILESIZE-1];
+      if (tile and MOVEBLOCKFROMBELOW<>0) then begin
+        fWantedDir:=DIRECTION_UP;
+        newDir:=0;
+        if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX,(fY+31) div TILESIZE-1]).Hit(fColor);
+      end else
+        newDir:=DIRECTION_UP;
+    end else newDir:=fDir;
+  end else
+  if keys[SDL_SCANCODE_RIGHT] then begin
+    if fy mod 32=0 then begin
+      tile:=fMap.Tiles[pX+1,pY];
+      if (tile and MOVEBLOCKFROMLEFT<>0) then begin
+        fWantedDir:=DIRECTION_RIGHT;
+        newDir:=0;
+        if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX+1,pY]).Hit(fColor);
+      end else
+        newDir:=DIRECTION_RIGHT;
+    end else newDir:=fDir;
+  end else
+  if keys[SDL_SCANCODE_DOWN] then begin
+    if fx mod 32=0 then begin
+      tile:=fMap.Tiles[pX,pY+1];
+      if (tile and MOVEBLOCKFROMABOVE<>0) then begin
+        fWantedDir:=DIRECTION_DOWN;
+        newDir:=0;
+        if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX,pY+1]).Hit(fColor);
+      end else
+        newDir:=DIRECTION_DOWN;
+    end else newDir:=fDir;
+  end else
+  if keys[SDL_SCANCODE_LEFT] then begin
+    if fy mod 32=0 then begin
+      tile:=fMap.Tiles[(fX+31) div TILESIZE-1,pY];
+      if (tile and MOVEBLOCKFROMRIGHT<>0) then begin
+        fWantedDir:=DIRECTION_LEFT;
+        newDir:=0;
+        if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[(fX+31) div TILESIZE-1,pY]).Hit(fColor);
+      end else
+        newDir:=DIRECTION_LEFT;
+    end else newDir:=fDir;
   end else begin
-    fDir:=pos('B',dirs);
-    if fDir>0 then fDir:=((fDir+1) and 3)+1;  // Bounce: 1->3 2->4 3->1 4->2
+    // No direction key pressed
+    if (fDir=0) and (fWantedDir<>0) then fDir:=fWantedDir;
+    case fdir of
+      DIRECTION_UP:begin
+        if fY mod 32=0 then begin
+          tile:=fMap.Tiles[pX,(fY+31) div TILESIZE-1];
+          if (tile and MOVEBLOCKFROMBELOW<>0) then begin
+            if (fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE<>0) then begin
+              fWantedDir:=DIRECTION_UP;
+              newDir:=0;
+            end else newDir:=DIRECTION_DOWN;
+            if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX,(fY+31) div TILESIZE-1]).Hit(fColor);
+          end else
+            newDir:=DIRECTION_UP;
+        end else newDir:=fDir;
+      end;
+      DIRECTION_RIGHT:begin
+        if fX mod 32=0 then begin
+          tile:=fMap.Tiles[pX+1,pY];
+          if (tile and MOVEBLOCKFROMLEFT<>0) then begin
+            if (fMap.Tiles[(fX+31) div TILESIZE-1,pY] and MOVEBLOCKFROMRIGHT<>0) then begin
+              fWantedDir:=DIRECTION_RIGHT;
+              newDir:=0;
+            end else newDir:=DIRECTION_LEFT;
+            if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX+1,pY]).Hit(fColor);
+          end else
+            newDir:=DIRECTION_RIGHT;
+        end else newDir:=fDir;
+      end;
+      DIRECTION_DOWN:begin
+        if fY mod 32=0 then begin
+          tile:=fMap.Tiles[pX,pY+1];
+          if (tile and MOVEBLOCKFROMABOVE<>0) then begin
+            if (fMap.Tiles[pX,(fY+31) div TILESIZE-1] and MOVEBLOCKFROMBELOW<>0) then begin
+              fWantedDir:=DIRECTION_DOWN;
+              newDir:=0;
+            end else newDir:=DIRECTION_UP;
+            if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX,pY+1]).Hit(fColor);
+          end else
+            newDir:=DIRECTION_DOWN;
+        end else newDir:=fDir;
+      end;
+      DIRECTION_LEFT:begin
+        if fX mod 32=0 then begin
+          tile:=fMap.Tiles[(fX+31) div TILESIZE-1,pY];
+          if (tile and MOVEBLOCKFROMRIGHT<>0) then begin
+            if (fMap.Tiles[pX+1,pY] and MOVEBLOCKFROMLEFT<>0) then begin
+              fWantedDir:=DIRECTION_LEFT;
+              newDir:=0;
+            end else newDir:=DIRECTION_RIGHT;
+            if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[(fX+31) div TILESIZE-1,pY]).Hit(fColor);
+          end else
+            newDir:=DIRECTION_LEFT;
+        end else newDir:=fDir;
+      end;
+    end;
   end;
-
+  fDir:=newDir;
+  case fDir of
+    DIRECTION_UP:dec(fY);
+    DIRECTION_RIGHT:inc(fX);
+    DIRECTION_DOWN:inc(fY);
+    DIRECTION_LEFT:dec(fX);
+  end;
   if (fX mod 32=0) and (fY mod 32=0) then begin
     case fMap.Tiles[fX div TILESIZE,fY div TILESIZE] of
       TILE_COLOR1:fColor:=COLOR1;
@@ -423,7 +457,6 @@ begin
                     end;
     end;
   end;
-
 end;
 
 {$endregion}

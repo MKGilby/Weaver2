@@ -7,4 +7,4 @@
 0006* 2024121920241220Draw teleport tile (2 variants at least)
 0007  20241220        Make zapper kill player
 0008* 2024122020241220Make teleport work
-0009  20241220        Save direction when player is stuck and continue moving when unstuck
+0009* 2024122020250101Save direction when player is stuck and continue moving when unstuck

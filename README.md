@@ -5,6 +5,9 @@ Original version Copyright 1990 '64er
 
 This version Copyright 2024 MKSZTSZ
 
+## 2025.01.01 - Build 6
+- Moving reworked, it now remembers last direction when stuck. (Used in second map.)
+
 ## 2024.12.20 - Build 5
 - Added teleport graphics.
 - Added second map.
