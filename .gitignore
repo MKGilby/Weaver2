@@ -52,3 +52,4 @@ source/*.exe
 *.zip
 source/BuildRelease_x64.ps1
 source/done.txt
+source/BuildAndUpload.ps1
