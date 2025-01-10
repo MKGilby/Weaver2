@@ -6,8 +6,8 @@ Original version Copyright 1990 '64er
 This version Copyright 2024 MKSZTSZ
 
 Compiled binaries from current build:
-[x64](https://www.mksztsz.hu/tmpfiles/Weaver2_0.0.0.7.zip) and
-[x86](https://www.mksztsz.hu/tmpfiles/Weaver2_x86_0.0.0.7.zip).
+[x64](https://mksztsz.hu/tmpfiles/Weaver2_0.0.0.7.zip) and
+[x86](https://mksztsz.hu/tmpfiles/Weaver2_x86_0.0.0.7.zip).
 
 ## 2025.01.10 - Build 7
 - Added third map with moving enemies.
