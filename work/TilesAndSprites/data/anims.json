@@ -113,6 +113,24 @@
       { "x" : 160, "y" : 32 }
     ] },
   { "Type" : "TimeBased",
+    "Name" : "VerticalEnemy",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 5,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : false,
+    "Looped" : true,
+    "Pingpong" : true,
+    "Frames" : [
+      { "x" : 0, "y" : 64 },
+      { "x" : 32, "y" : 64 },
+      { "x" : 64, "y" : 64 },
+      { "x" : 96, "y" : 64 },
+      { "x" : 128, "y" : 64 }
+    ] },
+  { "Type" : "TimeBased",
     "Name" : "Teleport1",
     "Width" : 32,
     "Height" : 32,
@@ -123,8 +141,8 @@
     "Paused" : false,
     "Looped" : true,
     "Frames" : [
-      { "x" : 64, "y" : 64 },
-      { "x" : 96, "y" : 64 }
+      { "x" : 256, "y" : 0 },
+      { "x" : 288, "y" : 0 }
     ] },
   { "Type" : "TimeBased",
     "Name" : "Teleport2",
@@ -137,7 +155,7 @@
     "Paused" : false,
     "Looped" : true,
     "Frames" : [
-      { "x" : 0, "y" : 64 },
-      { "x" : 32, "y" : 64 }
+      { "x" : 192, "y" : 0 },
+      { "x" : 224, "y" : 0 }
     ] }
 ] }

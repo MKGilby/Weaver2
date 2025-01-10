@@ -62,6 +62,12 @@ begin
       WINDOWHEIGHT,
       Format(WINDOWCAPTION,[iVersion,StringReplace(iBuildDate,'/','.',[rfReplaceAll])]));
   end;
+{  fMainWindow:=TWindow.CreateFullScreenBordered(
+    WINDOWWIDTH,
+    WINDOWHEIGHT,
+    Format(WINDOWCAPTION,[iVersion,StringReplace(iBuildDate,'/','.',[rfReplaceAll])])
+  );
+  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,'0');}
 
   Controller:=FindController;
 
@@ -83,7 +89,7 @@ end;
 procedure TMain.Run;
 var Map:TMap;Play1Map:TPlay1Map;res,currentmap:integer;
 begin
-  currentmap:=1;
+  currentmap:=3;
   Map:=TMap.Create;
   try
     repeat

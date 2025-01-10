@@ -24,6 +24,9 @@ const
   DIRECTION_RIGHT=2;
   DIRECTION_DOWN=3;
   DIRECTION_LEFT=4;
+  VERTICALDIRS:array[0..1] of integer=(DIRECTION_UP, DIRECTION_DOWN);
+  HORIZONTALDIRS:array[0..1] of integer=(DIRECTION_LEFT, DIRECTION_RIGHT);
+  ALLDIRS:array[0..3] of integer=(DIRECTION_UP, DIRECTION_RIGHT, DIRECTION_DOWN, DIRECTION_LEFT);
 
   LOADED_TILE_FLOOR=ord('.');
   LOADED_TILE_WALL=ord('#');
@@ -68,11 +71,11 @@ const
   ZAPPERLIFECYCLE=3;
   TELEPORTCOOLDOWN=2;
 
-  PLAYERSPEED=3;  // tiles / sec
-  TIMEPERPIXEL=1/(TILESIZE*PLAYERSPEED);
+  PLAYERSPEED=4;  // tiles / sec
+  PLAYERTIMEPERPIXEL=1/(TILESIZE*PLAYERSPEED);
 
   // If a game cycle uses more than this seconds, it will be feed to objects by
-  // this amount. Don't make it higher than TIMEPERPIXEL!
+  // this amount. Don't make it higher than PLAYERTIMEPERPIXEL!
   MAXTIMESLICE=1/128;
 
 

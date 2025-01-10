@@ -104,6 +104,8 @@ begin
     end;
   fPlayer:=TPlayer.Create(fMap);
   Entities.Add(fPlayer);
+  for x:=0 to fMap.MonsterCount-1 do
+    Entities.Add(TMonster.Create(fMap,x));
 end;
 
 destructor TPlay1Map.Destroy;

@@ -75,7 +75,6 @@ type
     destructor Destroy; override;
     procedure Draw; override;
     procedure Move(pElapsedTime:double); override;
-    procedure Move1Pixel;
   private
     fAnimation:TAnimation;  // a frame for each color
     fMap:TMap;
@@ -85,6 +84,7 @@ type
     fShield:double;
     fPixelMoveRemainingTime:double;
     fState:TPlayerExternalState;
+    procedure Move1Pixel;
   public
     property State:TPlayerExternalState read fState;
   end;
@@ -115,6 +115,30 @@ type
   public
     property PairX:integer read fPairX;
     property PairY:integer read fPairY;
+  end;
+
+  TMonsterMove1pxProc=procedure of object;
+
+  { TMonster }
+
+  TMonster=class(TMapEntity)
+    constructor Create(iMap:TMap;iNumber:integer);
+    destructor Destroy; override;
+    procedure Draw; override;
+    procedure Move(pElapsedTime:double); override;
+  private
+    fMap:TMap;
+    fAnimation:TAnimation;
+    fTimePerPixel:double;
+    fDir:integer;
+    fMoveProc:TMonsterMove1pxProc;
+    fPixelMoveRemainingTime:double;
+    procedure Move1pxVertical;
+    procedure Move1pxHorizontal;
+    procedure Move1pxRoamer;
+    function NewDirVertical(pCurrentDir:integer):integer;
+    function NewDirHorizontal(pCurrentDir:integer):integer;
+    function NewDirRoamer(pCurrentDir:integer):integer;
   end;
 
 implementation
@@ -295,7 +319,7 @@ begin
   fColor:=COLOR1;
   fAnimation:=MM.Animations.ItemByName['Ship'].SpawnAnimation;
   fShield:=3;
-  fPixelMoveRemainingTime:=TIMEPERPIXEL;
+  fPixelMoveRemainingTime:=PLAYERTIMEPERPIXEL;
   fState:=psNone;
 end;
 
@@ -323,7 +347,7 @@ begin
   while pElapsedTime>=fPixelMoveRemainingTime do begin
     Move1Pixel;
     pElapsedTime:=pElapsedTime-fPixelMoveRemainingTime;
-    fPixelMoveRemainingTime:=TIMEPERPIXEL;
+    fPixelMoveRemainingTime:=PLAYERTIMEPERPIXEL;
   end;
   fPixelMoveRemainingTime:=fPixelMoveRemainingTime-pElapsedTime;
 end;
@@ -551,6 +575,268 @@ begin
     fCoolDown:=TELEPORTCOOLDOWN;
     fMap.Tiles[pX,pY]:=TILE_FLOOR;
     TTeleport(Entities.EntityAt[fPairX,fPairY]).Hit;
+  end;
+end;
+
+{$endregion}
+
+{ TMonster }
+{$region /fold}
+
+constructor TMonster.Create(iMap:TMap; iNumber:integer);
+var tmp:TMonsterData;
+begin
+  fMap:=iMap;
+  tmp:=fMap.Monsters[iNumber];
+  inherited Create(tmp._x,tmp._y);
+  case tmp._type of
+    mtVertical:begin
+      fMoveProc:=Move1pxVertical;
+      fAnimation:=MM.Animations.ItemByName['VerticalEnemy'].SpawnAnimation;
+      fDir:=NewDirVertical(DIRECTION_NONE);
+    end;
+    mtHorizontal:begin
+      fMoveProc:=Move1pxHorizontal;
+      fAnimation:=MM.Animations.ItemByName['VerticalEnemy'].SpawnAnimation;
+      fDir:=NewDirHorizontal(DIRECTION_NONE);
+    end;
+    mtRoamer:begin
+      fMoveProc:=Move1pxRoamer;
+      fAnimation:=MM.Animations.ItemByName['VerticalEnemy'].SpawnAnimation;
+      fDir:=NewDirRoamer(DIRECTION_NONE);
+    end;
+  end;
+  case tmp._speed of
+    msSlow:fTimePerPixel:=1/(TILESIZE*1.5);
+    msFast:fTimePerPixel:=1/(TILESIZE*3);
+  end;
+  fPixelMoveRemainingTime:=fTimePerPixel;
+end;
+
+destructor TMonster.Destroy;
+begin
+  fAnimation.Free;
+  inherited Destroy;
+end;
+
+procedure TMonster.Draw;
+begin
+  fAnimation.PutFrame(fX+MAPLEFT,fY+MAPTOP);
+end;
+
+procedure TMonster.Move(pElapsedTime:double);
+begin
+  fAnimation.Animate(pElapsedTime);
+  // While ellapsed time greater than remaining time until next pixel move, do pixel move.
+  while pElapsedTime>=fPixelMoveRemainingTime do begin
+    fMoveProc;
+    pElapsedTime:=pElapsedTime-fPixelMoveRemainingTime;
+    fPixelMoveRemainingTime:=fTimePerPixel;
+  end;
+  fPixelMoveRemainingTime:=fPixelMoveRemainingTime-pElapsedTime;
+end;
+
+procedure TMonster.Move1pxVertical;
+begin
+  if fY mod 32=0 then begin
+    fpY:=fY div 32;
+    fDir:=NewDirVertical(fDir);
+  end;
+  case fDir of
+    DIRECTION_UP:dec(fY);
+    DIRECTION_DOWN:inc(fY);
+  end;
+end;
+
+procedure TMonster.Move1pxHorizontal;
+begin
+  if fX mod 32=0 then begin
+    fpX:=fX div 32;
+    fDir:=NewDirHorizontal(fDir);
+  end;
+  case fDir of
+    DIRECTION_LEFT:dec(fX);
+    DIRECTION_RIGHT:inc(fX);
+  end;
+end;
+
+procedure TMonster.Move1pxRoamer;
+begin
+  if (fX mod 32=0) and (fy mod 32=0) then begin
+    fpX:=fX div 32;
+    fpY:=fY div 32;
+    fDir:=NewDirRoamer(fDir);
+  end;
+  case fDir of
+    DIRECTION_UP:dec(fY);
+    DIRECTION_LEFT:dec(fX);
+    DIRECTION_DOWN:inc(fY);
+    DIRECTION_RIGHT:inc(fX);
+  end;
+end;
+
+function TMonster.NewDirVertical(pCurrentDir:integer):integer;
+begin
+  if pCurrentDir=DIRECTION_NONE then pCurrentDir:=VERTICALDIRS[random(length(VERTICALDIRS))];
+  case pCurrentDir of
+    DIRECTION_UP:begin
+      // Is something blocking the way up?
+      if fMap.Tiles[pX,pY-1] and MOVEBLOCKFROMBELOW<>0 then begin
+        // Can move down instead?
+        if fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE=0 then
+          Result:=DIRECTION_DOWN
+        else
+          // Do not move then.
+          Result:=DIRECTION_NONE;
+      end else
+        Result:=DIRECTION_UP;
+    end;
+    DIRECTION_DOWN:begin
+      // Is something blocking the way down?
+      if fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE<>0 then begin
+        // Can move up instead?
+        if fMap.Tiles[pX,pY-1] and MOVEBLOCKFROMBELOW=0 then
+          Result:=DIRECTION_UP
+        else
+          // Do not move then.
+          Result:=DIRECTION_NONE;
+      end else
+        Result:=DIRECTION_DOWN;
+    end;
+    otherwise Result:=DIRECTION_NONE;
+  end;
+end;
+
+function TMonster.NewDirHorizontal(pCurrentDir:integer):integer;
+begin
+  if pCurrentDir=DIRECTION_NONE then pCurrentDir:=HORIZONTALDIRS[random(length(HORIZONTALDIRS))];
+  case pCurrentDir of
+    DIRECTION_LEFT:begin
+      // Is something blocking the way left?
+      if fMap.Tiles[pX-1,pY] and MOVEBLOCKFROMRIGHT<>0 then begin
+        // Can move right instead?
+        if fMap.Tiles[pX+1,pY] and MOVEBLOCKFROMLEFT=0 then
+          Result:=DIRECTION_RIGHT
+        else
+          // Do not move then.
+          Result:=DIRECTION_NONE;
+      end else
+        Result:=DIRECTION_LEFT;
+    end;
+    DIRECTION_RIGHT:begin
+      // Is something blocking the way right?
+      if fMap.Tiles[pX+1,pY] and MOVEBLOCKFROMLEFT<>0 then begin
+        // Can move left instead?
+        if fMap.Tiles[pX-1,pY] and MOVEBLOCKFROMRIGHT=0 then
+          Result:=DIRECTION_LEFT
+        else
+          // Do not move then.
+          Result:=DIRECTION_NONE;
+      end else
+        Result:=DIRECTION_RIGHT;
+    end;
+    otherwise Result:=DIRECTION_NONE;
+  end;
+end;
+
+function TMonster.NewDirRoamer(pCurrentDir:integer):integer;
+var dirs:string;i:integer;
+begin
+  if pCurrentDir=DIRECTION_NONE then pCurrentDir:=ALLDIRS[random(length(ALLDIRS))];
+  case pCurrentDir of
+    DIRECTION_UP:begin
+      // Is something blocking the way up?
+      if fMap.Tiles[pX,pY-1] and MOVEBLOCKFROMBELOW<>0 then begin  // Yes
+        dirs:='0000';
+        if fMap.Tiles[pX+1,pY] and MOVEBLOCKFROMLEFT=0 then dirs[2]:='1';
+        if fMap.Tiles[pX-1,pY] and MOVEBLOCKFROMRIGHT=0 then dirs[4]:='1';
+        // Can go left or right?
+        if dirs<>'0000' then begin  // Yes
+          // Choose randomly
+          repeat
+            i:=random(4);
+          until dirs[i+1]='1';
+          Result:=ALLDIRS[i];
+        end else begin  // No
+          // Can go down?
+          if fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE=0 then
+            Result:=DIRECTION_DOWN
+          else
+            Result:=DIRECTION_NONE;
+        end;
+      end else  // No
+        Result:=DIRECTION_UP;
+    end;
+    DIRECTION_RIGHT:begin
+      // Is something blocking the way right?
+      if fMap.Tiles[pX+1,pY] and MOVEBLOCKFROMLEFT<>0 then begin  // Yes
+        dirs:='0000';
+        if fMap.Tiles[pX,pY-1] and MOVEBLOCKFROMBELOW=0 then dirs[1]:='1';
+        if fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE=0 then dirs[3]:='1';
+        // Can go up or down?
+        if dirs<>'0000' then begin  // Yes
+          // Choose randomly
+          repeat
+            i:=random(4);
+          until dirs[i+1]='1';
+          Result:=ALLDIRS[i];
+        end else begin  // No
+          // Can go left?
+          if fMap.Tiles[pX-1,pY] and MOVEBLOCKFROMRIGHT=0 then
+            Result:=DIRECTION_LEFT
+          else
+            Result:=DIRECTION_NONE;
+        end;
+      end else  // No
+        Result:=DIRECTION_RIGHT;
+    end;
+    DIRECTION_DOWN:begin
+      // Is something blocking the way down?
+      if fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE<>0 then begin  // Yes
+        dirs:='0000';
+        if fMap.Tiles[pX+1,pY] and MOVEBLOCKFROMLEFT=0 then dirs[2]:='1';
+        if fMap.Tiles[pX-1,pY] and MOVEBLOCKFROMRIGHT=0 then dirs[4]:='1';
+        // Can go left or right?
+        if dirs<>'0000' then begin  // Yes
+          // Choose randomly
+          repeat
+            i:=random(4);
+          until dirs[i+1]='1';
+          Result:=ALLDIRS[i];
+        end else begin  // No
+          // Can go up?
+          if fMap.Tiles[pX,pY-1] and MOVEBLOCKFROMBELOW=0 then
+            Result:=DIRECTION_UP
+          else
+            Result:=DIRECTION_NONE;
+        end;
+      end else  // No
+        Result:=DIRECTION_DOWN;
+    end;
+    DIRECTION_LEFT:begin
+      // Is something blocking the way left?
+      if fMap.Tiles[pX-1,pY] and MOVEBLOCKFROMRIGHT<>0 then begin  // Yes
+        dirs:='0000';
+        if fMap.Tiles[pX,pY-1] and MOVEBLOCKFROMBELOW=0 then dirs[1]:='1';
+        if fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE=0 then dirs[3]:='1';
+        // Can go up or down?
+        if dirs<>'0000' then begin  // Yes
+          // Choose randomly
+          repeat
+            i:=random(4);
+          until dirs[i+1]='1';
+          Result:=ALLDIRS[i];
+        end else begin  // No
+          // Can go right?
+          if fMap.Tiles[pX+1,pY] and MOVEBLOCKFROMLEFT=0 then
+            Result:=DIRECTION_RIGHT
+          else
+            Result:=DIRECTION_NONE;
+        end;
+      end else  // No
+        Result:=DIRECTION_LEFT;
+    end;
+    otherwise Result:=DIRECTION_NONE;
   end;
 end;
 
