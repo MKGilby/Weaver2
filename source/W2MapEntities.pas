@@ -602,7 +602,7 @@ begin
     end;
     mtRoamer:begin
       fMoveProc:=Move1pxRoamer;
-      fAnimation:=MM.Animations.ItemByName['VerticalEnemy'].SpawnAnimation;
+      fAnimation:=MM.Animations.ItemByName['RoamerEnemy'].SpawnAnimation;
       fDir:=NewDirRoamer(DIRECTION_NONE);
     end;
   end;
