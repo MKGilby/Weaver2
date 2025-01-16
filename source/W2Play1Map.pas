@@ -128,6 +128,8 @@ begin
     pre:=now;
     SDL_SetRenderDrawColor(PrimaryWindow.Renderer,0,0,0,255);
     SDL_RenderClear(PrimaryWindow.Renderer);
+    if Entities.IsPlayerCollidedWithEnemies(fPlayer.CollisionData) then
+      MM.Fonts.OutText('COLLIDE!',568,0,1);
     MM.Fonts.OutText(#1'BLOCKS: '#0+inttostr(BlockCount),568,128,1);
 
     PutTexture(MAPLEFT-8,MAPTOP-8,fBack);

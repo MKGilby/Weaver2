@@ -15,6 +15,10 @@
 //     * Changed getmems to p:=getmem.
 //     * Changed freemem to sizeless version.
 //     * Tidying code.
+//   V1.02 - 2025.01.16
+//     * CreateFromImage and CreateFromImagePart now treats a pixel empty, when:
+//       - alpha channel is 0, or
+//       - r,g and b channels are all 0.
 
 {$ifdef fpc}
   {$mode delphi}
@@ -61,7 +65,7 @@ uses SysUtils, Logger, MKToolBox, MKStream;
 
 const 
   Fstr={$I %FILE%}+', ';
-  Version='1.01a';
+  Version='1.02';
 
 constructor TMask.Create(iWidth,iHeight:integer);
 begin
@@ -114,7 +118,8 @@ begin
   q:=iImage.Rawdata;
   for j:=0 to iImage.Height-1 do
     for i:=0 to iImage.Width-1 do begin
-      if dword(q^)<>0 then byte(p^):=nzvalue else byte(p^):=0;
+      if (dword(q^) and $ffffff<>0) and (dword(q^) and $ff000000<>0) then
+        byte(p^):=nzvalue else byte(p^):=0;
       inc(p);
       inc(q,4);
     end;
@@ -131,7 +136,8 @@ begin
   for j:=0 to h-1 do begin
     q:=iImage.Rawdata+((y+j)*iImage.Width+x)*4;
     for i:=0 to w-1 do begin
-      if dword(q^)<>0 then byte(p^):=nzvalue else byte(p^):=0;
+      if (dword(q^) and $ffffff<>0) and (dword(q^) and $ff000000<>0) then
+        byte(p^):=nzvalue else byte(p^):=0;
       inc(p);
       inc(q,4);
     end;

@@ -5,7 +5,7 @@ unit W2MapEntities;
 interface
 
 uses
-  SysUtils, fgl, Animation2Unit, W2Map;
+  SysUtils, fgl, Animation2Unit, W2Map, CollisionChecker2Unit, Mask2Unit;
 
 type
 
@@ -20,9 +20,13 @@ type
   private
     fpX,fpY:integer;
     fX,fY:integer;
+    fCollisionData:PCollisionData;
+    function fGetCollisionData:PCollisionData; virtual;
   public
+    Enemy:boolean;
     property pX:integer read fpX;
     property pY:integer read fpY;
+    property CollisionData:PCollisionData read fGetCollisionData;
   end;
 
   { TMapEntities }
@@ -30,6 +34,7 @@ type
   TMapEntities=class(TFPGObjectList<TMapEntity>)
     procedure Draw;
     procedure Move(pElapsedTime:double);
+    function IsPlayerCollidedWithEnemies(pPlayerCollisionData:PCollisionData):boolean;
   private
     procedure MoveEx(pElapsedTime:double);
     function fGetEntityAt(x,y:integer):TMapEntity;
@@ -64,6 +69,8 @@ type
     fPosition:integer;
     fTimeLeft:double;
     fAnimation:TAnimation;
+    fZapperMask,fEmptyMask:TMask;
+    function fGetCollisionData:PCollisionData; override;
   end;
 
   TPlayerExternalState=(psNone,psExit,psDead);
@@ -85,6 +92,7 @@ type
     fPixelMoveRemainingTime:double;
     fState:TPlayerExternalState;
     procedure Move1Pixel;
+    function fGetCollisionData:PCollisionData; override;
   public
     property State:TPlayerExternalState read fState;
   end;
@@ -154,6 +162,7 @@ begin
   fpY:=ipY;
   fX:=fpX*TILESIZE;
   fY:=fpY*TILESIZE;
+  Enemy:=false;
 end;
 
 procedure TMapEntity.MoveRel(iDeltaX,iDeltaY:integer);
@@ -170,6 +179,13 @@ procedure TMapEntity.Move(pElapsedTime: double);
 begin
   { Nothing to do, override if want to do something based on ellapsed time. }
 end;
+
+function TMapEntity.fGetCollisionData:PCollisionData;
+begin
+  { Nothing to do, override if want to provide collision data. }
+  Result:=nil;
+end;
+
 {$endregion}
 
 { TMapEntities }
@@ -190,6 +206,16 @@ begin
     pElapsedTime:=pElapsedTime-MAXTIMESLICE;
   end;
   MoveEx(pElapsedTime);
+end;
+
+function TMapEntities.IsPlayerCollidedWithEnemies(pPlayerCollisionData:PCollisionData):boolean;
+var i:integer;
+begin
+  Result:=false;
+  for i:=0 to Count-1 do
+    Result:=Result or
+      (Items[i].Enemy and
+       TCollisionChecker.IsCollideNonZero(pPlayerCollisionData,Items[i].CollisionData));
 end;
 
 procedure TMapEntities.MoveEx(pElapsedTime:double);
@@ -281,10 +307,15 @@ begin
   fPosition:=1;
   fTimeLeft:=ZAPPERLIFECYCLE;
   fAnimation:=MM.Animations.ItemByName['Zapper'].SpawnAnimation;
+  Enemy:=true;
+  fZapperMask:=MM.Masks.ItemByName['ZapperMask0'];
+  fEmptyMask:=MM.Masks.ItemByName['EmptyMask0'];
+  fCollisionData:=TCollisionChecker.CreateCollisionData(fZapperMask,fX,fY);
 end;
 
 destructor TZapper.Destroy;
 begin
+  TCollisionChecker.DestroyCollisionData(fCollisionData);
   fAnimation.Free;
   inherited Destroy;
 end;
@@ -306,6 +337,18 @@ begin
     if fPosition>length(fProgram) then fPosition:=1;
   end;
 end;
+
+function TZapper.fGetCollisionData:PCollisionData;
+begin
+  if fProgram[fPosition]='1' then
+    fCollisionData._mask:=fZapperMask
+  else
+    fCollisionData._mask:=fEmptyMask;
+  fCollisionData._x:=fX;
+  fCollisionData._y:=fY;
+  Result:=fCollisionData;
+end;
+
 {$endregion}
 
 { TPlayer }
@@ -321,10 +364,12 @@ begin
   fShield:=3;
   fPixelMoveRemainingTime:=PLAYERTIMEPERPIXEL;
   fState:=psNone;
+  fCollisionData:=TCollisionChecker.CreateCollisionData(MM.Masks.ItemByName['ShipMask0'],fX,fY);
 end;
 
 destructor TPlayer.Destroy;
 begin
+  TCollisionChecker.DestroyCollisionData(fCollisionData);
   fAnimation.Free;
   inherited Destroy;
 end;
@@ -481,6 +526,13 @@ begin
                     end;
     end;
   end;
+end;
+
+function TPlayer.fGetCollisionData:PCollisionData;
+begin
+  fCollisionData._x:=fX;
+  fCollisionData._y:=fY;
+  Result:=fCollisionData;
 end;
 
 {$endregion}

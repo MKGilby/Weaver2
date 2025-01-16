@@ -1,0 +1,73 @@
+{ "Animations" : [
+  { "Type" : "TimeBased",
+    "Name" : "ShipMask",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 1,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : true,
+    "Frames" : [
+      { "x" : 160, "y" : 0 }
+    ] },
+  { "Type" : "TimeBased",
+    "Name" : "ZapperMask",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 25,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : true,
+    "Frames" : [
+      { "x" : 128, "y" : 32 }
+    ] },
+  { "Type" : "TimeBased",
+    "Name" : "EmptyMask",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 1,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : true,
+    "Frames" : [
+      { "x" : 160, "y" : 32 }
+    ] },
+  { "Type" : "TimeBased",
+    "Name" : "VerticalEnemy",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 5,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : false,
+    "Looped" : true,
+    "Pingpong" : true,
+    "Frames" : [
+      { "x" : 0, "y" : 0 },
+      { "x" : 32, "y" : 0 },
+      { "x" : 64, "y" : 0 },
+      { "x" : 96, "y" : 0 },
+      { "x" : 128, "y" : 0 }
+    ] },
+  { "Type" : "TimeBased",
+    "Name" : "RoamerEnemy",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 5,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : false,
+    "Looped" : true,
+    "Pingpong" : true,
+    "Frames" : [
+      { "x" : 0, "y" : 32 },
+      { "x" : 32, "y" : 32 },
+      { "x" : 64, "y" : 32 },
+      { "x" : 96, "y" : 32 }
+    ] }
+] }

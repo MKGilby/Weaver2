@@ -3,11 +3,31 @@ Remake of Weaver 2 a 1990 Commodore 64 game by '64er
 
 Original version Copyright 1990 '64er
 
-This version Copyright 2024 MKSZTSZ
+This version Copyright 2025 MKSZTSZ
 
-Compiled binaries from current build with datafiles and DLLs:
-[x64](https://mksztsz.hu/tmpfiles/Weaver2_0.0.0.8.zip "Download x64 version") or
-[x86](https://mksztsz.hu/tmpfiles/Weaver2_x86_0.0.0.8.zip "Download x86 version").
+## Programming language
+FreePascal (Lazarus 4.0.0rc2 with FPC 3.2.2)
+https://www.lazarus-ide.org/
+
+## Source codes
+SDL2 pascal headers (source\units\sdl2) is licensed under MPL or zlib license.
+GitHub for SDL2 pascal headers: https://github.com/PascalGameDevelopment/SDL2-for-Pascal
+
+The rest of source code is licensed under GNU GPL v3 (or later).
+
+## Tools
+PNGOut tool is by Ken Silverman (http://advsys.net/ken)
+MKConv2, FontBuild2 and MAD4 tools are made by me.
+
+## Compiled binaries from current build with datafiles and DLLs
+[x64](https://mksztsz.hu/tmpfiles/Weaver2_0.0.0.9.zip "Download x64 version") or
+[x86](https://mksztsz.hu/tmpfiles/Weaver2_x86_0.0.0.9.zip "Download x86 version").
+
+## 2025.01.16 - Build 9
+- Sprites are separated into two files, masked and non-masked.
+- Masks are created for masked sprites.
+- Collision detection works for zappers. 
+  (A "COLLIDE!" text appears when collision occurs.)
 
 ## 2025.01.12 - Build 8
 - Added roaming enemy gfx.

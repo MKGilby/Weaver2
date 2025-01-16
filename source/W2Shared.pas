@@ -272,7 +272,7 @@ begin
   MM:=TMediaManager.Create;
   MM.Load('tiles.png','Tiles');
   MM.Images.ItemByName['Tiles'].RecolorRGB(MonoColorR,MonoColorG,MonoColorB);
-  Sprites:=TARGBImage.Create('sprites.png');
+  Sprites:=TARGBImage.Create('sprites_nonmasked.png');
   try
     Atlas:=TTextureAtlasGenerator.Create(1024,1024,1);
     try
@@ -288,7 +288,22 @@ begin
       CreateAnim2('Block6','Block4','Block6to4',32,Sprites,Atlas);
       Atlas.Crop;
       Atlas.TextureAtlas.RecolorRGB(MonoColorR,MonoColorG,MonoColorB);
-      MM.AddImage(Atlas.TextureAtlas,'Sprites');
+      MM.AddImage(Atlas.TextureAtlas,'Sprites_nonmasked');
+      Atlas.FreeImage:=false;
+    finally
+      Atlas.Free
+    end;
+  finally
+    Sprites.Free;
+  end;
+  Sprites:=TARGBImage.Create('sprites_masked.png');
+  try
+    Atlas:=TTextureAtlasGenerator.Create(1024,1024,1);
+    try
+      Atlas.AddImage(Sprites);
+      Atlas.Crop;
+      Atlas.TextureAtlas.RecolorRGB(MonoColorR,MonoColorG,MonoColorB);
+      MM.AddImage(Atlas.TextureAtlas,'Sprites_masked',MM_CREATEMASKFORANIMATIONFRAMES);
       Atlas.FreeImage:=false;
     finally
       Atlas.Free
