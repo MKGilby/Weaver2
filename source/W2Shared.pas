@@ -1,3 +1,8 @@
+{
+  This file is part of the source code of Weaver 2.
+  See "copyright.txt" for details.
+}
+
 unit W2Shared;
 
 {$mode Delphi}
@@ -46,6 +51,18 @@ const
   LOADED_TILE_BLOCK6=ord('6');
   LOADED_TILE_TELEPORT1=ord('T');
   LOADED_TILE_TELEPORT2=ord('U');
+  LOADED_TILE_DOOR1=ord('e');
+  LOADED_TILE_DOORBUTTON1=ord('E');
+  LOADED_TILE_DOOR2=ord('f');
+  LOADED_TILE_DOORBUTTON2=ord('F');
+  LOADED_TILE_DOOR3=ord('g');
+  LOADED_TILE_DOORBUTTON3=ord('G');
+  LOADED_TILE_DOOR4=ord('h');
+  LOADED_TILE_DOORBUTTON4=ord('H');
+  LOADED_TILE_DOOR5=ord('i');
+  LOADED_TILE_DOORBUTTON5=ord('I');
+  LOADED_TILE_DOOR6=ord('j');
+  LOADED_TILE_DOORBUTTON6=ord('J');
 
   MOVEBLOCKFROMABOVE=$0100;
   MOVEBLOCKFROMBELOW=$0400;
@@ -63,6 +80,8 @@ const
   TILE_ZAPPER=6;
   TILE_BLOCK=7;
   TILE_TELEPORT=8;  // No need to differentiate, TTeleport already knows pair's coords.
+  TILE_DOOR=9;   // No need to differentiate, TDoorButton already knows door's coords.
+  TILE_DOORBUTTON=10;  // No need to differentiate, TDoorButton already knows door's coords.
 
   COLOR1=1;
   COLOR2=2;

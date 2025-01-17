@@ -1,4 +1,4 @@
-0010Weaver2 Remake
+0014Weaver2 Remake
 0001* 2024121920241219Draw player over Zapper
 0002* 2024121920241219Change player color as moves over color circles
 0003* 2024121920241219Destroy blocks as player touches them
@@ -8,3 +8,7 @@
 0007  20241220        Make zapper kill player
 0008* 2024122020241220Make teleport work
 0009* 2024122020250101Save direction when player is stuck and continue moving when unstuck
+0010* 2025011720250117Add collision detection to enemies
+0011  20250117        Add destruction animation to player
+0012  20250117        Another rework of moving to be same as the original
+0013  20250117        Add horizontal enemy gfx

@@ -1,3 +1,8 @@
+{
+  This file is part of the source code of Weaver 2.
+  See "copyright.txt" for details.
+}
+
 unit W2Main;
 
 {$mode Delphi}{$H+}
@@ -89,7 +94,7 @@ end;
 procedure TMain.Run;
 var Map:TMap;Play1Map:TPlay1Map;res,currentmap:integer;
 begin
-  currentmap:=1;
+  currentmap:=4;
   Map:=TMap.Create;
   try
     repeat

@@ -139,5 +139,77 @@
     "Frames" : [
       { "x" : 0, "y" : 32 },
       { "x" : 32, "y" : 32 }
+    ] },
+  { "Type" : "TimeBased",
+    "Name" : "Door1",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 1,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : true,
+    "Frames" : [
+      { "x" : 0, "y" : 64 }
+    ] },
+  { "Type" : "TimeBased",
+    "Name" : "Door2",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 1,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : true,
+    "Frames" : [
+      { "x" : 32, "y" : 64 }
+    ] },
+  { "Type" : "TimeBased",
+    "Name" : "Door3",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 1,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : true,
+    "Frames" : [
+      { "x" : 64, "y" : 64 }
+    ] },
+  { "Type" : "TimeBased",
+    "Name" : "Door4",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 1,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : true,
+    "Frames" : [
+      { "x" : 96, "y" : 64 }
+    ] },
+  { "Type" : "TimeBased",
+    "Name" : "Door5",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 1,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : true,
+    "Frames" : [
+      { "x" : 128, "y" : 64 }
+    ] },
+  { "Type" : "TimeBased",
+    "Name" : "Door6",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 1,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : true,
+    "Frames" : [
+      { "x" : 160, "y" : 64 }
     ] }
 ] }

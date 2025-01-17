@@ -1,3 +1,8 @@
+{
+  This file is part of the source code of Weaver 2.
+  See "copyright.txt" for details.
+}
+
 unit W2MapEntities;
 
 {$mode Delphi}
@@ -15,7 +20,7 @@ type
     constructor Create(ipX,ipY:integer);
     // Move entity by dx,dy tiles
     procedure MoveRel(iDeltaX,iDeltaY:integer);
-    procedure Draw; virtual; abstract;
+    procedure Draw; virtual;
     procedure Move(pElapsedTime:double); virtual;
   private
     fpX,fpY:integer;
@@ -141,12 +146,37 @@ type
     fDir:integer;
     fMoveProc:TMonsterMove1pxProc;
     fPixelMoveRemainingTime:double;
+    fMasks:array of TMask;
     procedure Move1pxVertical;
     procedure Move1pxHorizontal;
     procedure Move1pxRoamer;
     function NewDirVertical(pCurrentDir:integer):integer;
     function NewDirHorizontal(pCurrentDir:integer):integer;
     function NewDirRoamer(pCurrentDir:integer):integer;
+    function fGetCollisionData:PCollisionData; override;
+  end;
+
+  { TDoor }
+
+  TDoor=class(TMapEntity)
+    constructor Create(ipX,ipY,iColor:integer;iMap:TMap);
+    destructor Destroy; override;
+    procedure Draw; override;
+    procedure Open;
+  private
+    fColor:integer;
+    fMap:TMap;
+    fAnimation:TAnimation;
+  end;
+
+  { TDoorButton }
+
+  TDoorButton=class(TMapEntity)
+    constructor Create(ipX,ipY,iColor:integer;iMap:TMap);
+    procedure Hit;
+  private
+    fPairX,fPairY:integer;
+    fMap:TMap;
   end;
 
 implementation
@@ -173,6 +203,11 @@ begin
   inc(fpY,iDeltaY);
   if (fpY<0) then fpY:=0
   else if (fpY>=MAPHEIGHT) then fpY:=MAPHEIGHT-1;
+end;
+
+procedure TMapEntity.Draw;
+begin
+  { Nothing to do, override if want draw something. }
 end;
 
 procedure TMapEntity.Move(pElapsedTime: double);
@@ -524,6 +559,9 @@ begin
                       fY:=fpY*TILESIZE;
                       TTeleport(Entities.EntityAt[fX div TILESIZE,fY div TILESIZE]).Hit;
                     end;
+      TILE_DOORBUTTON:begin
+                        TDoorButton(Entities.EntityAt[fX div TILESIZE,fY div TILESIZE]).Hit;
+                      end;
     end;
   end;
 end;
@@ -630,13 +668,14 @@ begin
   end;
 end;
 
+
 {$endregion}
 
 { TMonster }
 {$region /fold}
 
 constructor TMonster.Create(iMap:TMap; iNumber:integer);
-var tmp:TMonsterData;
+var tmp:TMonsterData;i:integer;
 begin
   fMap:=iMap;
   tmp:=fMap.Monsters[iNumber];
@@ -662,11 +701,17 @@ begin
     msSlow:fTimePerPixel:=1/(TILESIZE*1.5);
     msFast:fTimePerPixel:=1/(TILESIZE*3);
   end;
+  SetLength(fMasks,fAnimation.Timer.FrameCount);
+  for i:=0 to fAnimation.Timer.FrameCount-1 do
+    fMasks[i]:=MM.Masks.ItemByName[fAnimation.Name+inttostr(i)];
   fPixelMoveRemainingTime:=fTimePerPixel;
+  fCollisionData:=TCollisionChecker.CreateCollisionData(fMasks[0],fX,fY);
+  Enemy:=true;
 end;
 
 destructor TMonster.Destroy;
 begin
+  TCollisionChecker.DestroyCollisionData(fCollisionData);
   fAnimation.Free;
   inherited Destroy;
 end;
@@ -890,6 +935,86 @@ begin
     end;
     otherwise Result:=DIRECTION_NONE;
   end;
+end;
+
+function TMonster.fGetCollisionData:PCollisionData;
+begin
+  fCollisionData._mask:=fMasks[fAnimation.Timer.CurrentFrameIndex];
+  fCollisionData._x:=fX;
+  fCollisionData._y:=fY;
+  Result:=fCollisionData;
+end;
+
+{$endregion}
+
+{ TDoor }
+{$region /fold}
+
+constructor TDoor.Create(ipX,ipY,iColor:integer; iMap:TMap);
+begin
+  inherited Create(ipX,ipY);
+  fColor:=iColor;
+  fMap:=iMap;
+  fAnimation:=MM.Animations.ItemByName[Format('Door%d',[fColor])].SpawnAnimation;
+end;
+
+destructor TDoor.Destroy;
+begin
+  fAnimation.Free;
+  inherited Destroy;
+end;
+
+procedure TDoor.Draw;
+begin
+  if Assigned(fAnimation) then fAnimation.PutFrame(fX+MAPLEFT,fY+MAPTOP);
+end;
+
+procedure TDoor.Open;
+begin
+  FreeAndNil(fAnimation);
+  fMap.Tiles[fpX,fpY]:=TILE_FLOOR;
+end;
+
+{$endregion}
+
+{ TDoorButton }
+{$region /fold}
+
+constructor TDoorButton.Create(ipX,ipY,iColor:integer; iMap:TMap);
+
+  // Searches door of same color and puts coords into fPairX/Y.
+  procedure SearchDoor(pLoadedTile:integer);
+  var x,y:integer;
+  begin
+    Log.LogDebug(Format('Searching for value: %d',[pLoadedTile]));
+    for y:=0 to iMap.Height-1 do
+      for x:=0 to iMap.Width-1 do
+        if (iMap.OrigTiles[x,y]=pLoadedTile) and ((x<>ipX) or (y<>ipY)) then begin
+          fPairX:=x;
+          fPairY:=y;
+          Log.LogDebug('Found!');
+          exit;
+        end;
+  end;
+
+begin
+  inherited Create(ipX,ipY);
+  fMap:=iMap;
+  case iColor of
+    1:SearchDoor(LOADED_TILE_DOOR1);
+    2:SearchDoor(LOADED_TILE_DOOR2);
+    3:SearchDoor(LOADED_TILE_DOOR3);
+    4:SearchDoor(LOADED_TILE_DOOR4);
+    5:SearchDoor(LOADED_TILE_DOOR5);
+    6:SearchDoor(LOADED_TILE_DOOR6);
+  end;
+  Log.LogDebug(Format('This: %d,%d    Pair: %d,%d',[ipX,ipY,fPairX,fPairY]));
+end;
+
+procedure TDoorButton.Hit;
+begin
+  TDoor(Entities.EntityAt[fPairX,fPairY]).Open;
+  fMap.Tiles[fpX,fpY]:=TILE_FLOOR;  // To prevent hitting again.
 end;
 
 {$endregion}

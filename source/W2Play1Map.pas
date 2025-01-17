@@ -1,3 +1,8 @@
+{
+  This file is part of the source code of Weaver 2.
+  See "copyright.txt" for details.
+}
+
 unit W2Play1Map;
 
 {$mode Delphi}
@@ -29,7 +34,9 @@ uses
 
 const
   // Put these in the order of tiles in 'tiles.png'
-  TILES:array[0..5] of string=('Color1','Color2','Color3','Floor','Zapper','Wall');
+  TILES:array[0..11] of string=
+    ('Color1','Color2','Color3','Floor','Zapper','Wall',
+     'Button1','Button2','Button3','Button4','Button5','Button6');
 
 { TPlay1Map }
 
@@ -99,6 +106,54 @@ begin
         LOADED_TILE_TELEPORT2:begin
           fMap.Tiles[x,y]:=TILE_TELEPORT;
           Entities.Add(TTeleport.Create(x,y,1,fMap));
+        end;
+        LOADED_TILE_DOOR1:begin
+          fMap.Tiles[x,y]:=TILE_DOOR or MOVEBLOCKALL;
+          Entities.Add(TDoor.Create(x,y,1,fMap));
+        end;
+        LOADED_TILE_DOOR2:begin
+          fMap.Tiles[x,y]:=TILE_DOOR or MOVEBLOCKALL;
+          Entities.Add(TDoor.Create(x,y,2,fMap));
+        end;
+        LOADED_TILE_DOOR3:begin
+          fMap.Tiles[x,y]:=TILE_DOOR or MOVEBLOCKALL;
+          Entities.Add(TDoor.Create(x,y,3,fMap));
+        end;
+        LOADED_TILE_DOOR4:begin
+          fMap.Tiles[x,y]:=TILE_DOOR or MOVEBLOCKALL;
+          Entities.Add(TDoor.Create(x,y,4,fMap));
+        end;
+        LOADED_TILE_DOOR5:begin
+          fMap.Tiles[x,y]:=TILE_DOOR or MOVEBLOCKALL;
+          Entities.Add(TDoor.Create(x,y,5,fMap));
+        end;
+        LOADED_TILE_DOOR6:begin
+          fMap.Tiles[x,y]:=TILE_DOOR or MOVEBLOCKALL;
+          Entities.Add(TDoor.Create(x,y,6,fMap));
+        end;
+        LOADED_TILE_DOORBUTTON1:begin
+          fMap.Tiles[x,y]:=TILE_DOORBUTTON;
+          Entities.Add(TDoorButton.Create(x,y,1,fMap));
+        end;
+        LOADED_TILE_DOORBUTTON2:begin
+          fMap.Tiles[x,y]:=TILE_DOORBUTTON;
+          Entities.Add(TDoorButton.Create(x,y,2,fMap));
+        end;
+        LOADED_TILE_DOORBUTTON3:begin
+          fMap.Tiles[x,y]:=TILE_DOORBUTTON;
+          Entities.Add(TDoorButton.Create(x,y,3,fMap));
+        end;
+        LOADED_TILE_DOORBUTTON4:begin
+          fMap.Tiles[x,y]:=TILE_DOORBUTTON;
+          Entities.Add(TDoorButton.Create(x,y,4,fMap));
+        end;
+        LOADED_TILE_DOORBUTTON5:begin
+          fMap.Tiles[x,y]:=TILE_DOORBUTTON;
+          Entities.Add(TDoorButton.Create(x,y,5,fMap));
+        end;
+        LOADED_TILE_DOORBUTTON6:begin
+          fMap.Tiles[x,y]:=TILE_DOORBUTTON;
+          Entities.Add(TDoorButton.Create(x,y,6,fMap));
         end;
       end;
     end;
@@ -173,11 +228,17 @@ begin
             LOADED_TILE_COLOR1:s:='Color1';
             LOADED_TILE_COLOR2:s:='Color2';
             LOADED_TILE_COLOR3:s:='Color3';
+            LOADED_TILE_DOORBUTTON1:s:='Button1';
+            LOADED_TILE_DOORBUTTON2:s:='Button2';
+            LOADED_TILE_DOORBUTTON3:s:='Button3';
+            LOADED_TILE_DOORBUTTON4:s:='Button4';
+            LOADED_TILE_DOORBUTTON5:s:='Button5';
+            LOADED_TILE_DOORBUTTON6:s:='Button6';
             else s:='Floor';
           end;
-          ti:=IndexOfTile(s);
+          ti:=IndexOfTile(s)*TILESIZE;
           if (ti>-1) then
-            tmpI.PutImagePart(i*TILESIZE+8,j*TILESIZE+8,ti*TILESIZE,0,TILESIZE,TILESIZE,tmpT);
+            tmpI.PutImagePart(i*TILESIZE+8,j*TILESIZE+8,ti mod tmpT.Width,ti div tmpT.Width*TILESIZE,TILESIZE,TILESIZE,tmpT);
         end;
       tmpI.HLine(0,0,tmpI.Width,MonoColor32);
       tmpI.HLine(1,1,tmpI.Width-2,MonoColor32);

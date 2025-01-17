@@ -1,3 +1,8 @@
+{
+  This file is part of the source code of Weaver 2.
+  See "copyright.txt" for details.
+}
+
 unit W2Map;
 
 {$mode Delphi}
