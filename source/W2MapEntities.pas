@@ -688,7 +688,7 @@ begin
     end;
     mtHorizontal:begin
       fMoveProc:=Move1pxHorizontal;
-      fAnimation:=MM.Animations.ItemByName['VerticalEnemy'].SpawnAnimation;
+      fAnimation:=MM.Animations.ItemByName['HorizontalEnemy'].SpawnAnimation;
       fDir:=NewDirHorizontal(DIRECTION_NONE);
     end;
     mtRoamer:begin

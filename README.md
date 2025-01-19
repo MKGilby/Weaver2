@@ -21,8 +21,11 @@ PNGOut tool is by Ken Silverman (http://advsys.net/ken)
 MKConv2, FontBuild2 and MAD4 tools are made by me.
 
 ## Compiled binaries from current build with datafiles and DLLs
-[x64](https://mksztsz.hu/tmpfiles/Weaver2_0.0.0.10.zip "Download x64 version") or
-[x86](https://mksztsz.hu/tmpfiles/Weaver2_x86_0.0.0.10.zip "Download x86 version").
+[x64](https://mksztsz.hu/tmpfiles/Weaver2_0.0.0.11.zip "Download x64 version") or
+[x86](https://mksztsz.hu/tmpfiles/Weaver2_x86_0.0.0.11.zip "Download x86 version").
+
+## 2025.01.19 - Build 11
+- Added horizontal enemy gfx.
 
 ## 2025.01.17 - Build 10
 - Collision detection works for moving enemies.

@@ -11,4 +11,4 @@
 0010* 2025011720250117Add collision detection to enemies
 0011  20250117        Add destruction animation to player
 0012  20250117        Another rework of moving to be same as the original
-0013  20250117        Add horizontal enemy gfx
+0013* 2025011720250119Add horizontal enemy gfx
