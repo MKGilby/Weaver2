@@ -1,15 +1,24 @@
 ; Ship animation contains 4 frames but only the first, second and fourth are used
 ; for color1, color2 and color3 respectively.
-r png data\sprites_masked.png 1
-r json data\anims_masked.json 1
-m setcolorkey 255 0 255 1
-w png sprites_masked.png 1
+;r png data\sprites_masked.png 1
+;r json data\anims_masked.json 1
+;m setcolorkey 255 0 255 1
+;w png sprites_masked.png 1
 
-r png data\sprites_nonmasked.png 1
-r json data\anims_nonmasked.json 1
-m setcolorkey 255 0 255 1
-w png sprites_nonmasked.png 1
+;r png data\sprites_nonmasked.png 1
+;r json data\anims_nonmasked.json 1
+;m setcolorkey 255 0 255 1
+;w png sprites_nonmasked.png 1
 
-r png data\tiles.png 1
-w png tiles.png 1
- 
+;r png data\tiles.png 1
+;w png tiles.png 1
+
+r png data\floor_grayscaled.png 1
+w gsd floor.gsd 1
+
+r png data\zapper_grayscaled.png 1
+w gsd zapper_floor.gsd 1
+
+r png data\wall_grayscaled.png 1
+w gsd wall.gsd 1
+
