@@ -10,7 +10,7 @@ unit W2Map;
 interface
 
 uses
-  Classes, SysUtils, TileMapUnit, fpjson, jsonparser, GradientUnit;
+  Classes, SysUtils, TileMapUnit, fpjson, jsonparser;
 
 type
 
@@ -27,14 +27,11 @@ type
 
   TMap=class(TTileMap)
     constructor Create;
-    destructor Destroy; override;
     procedure LoadFromFile(pMapNo:integer);
   private
     fPlayerStartX,fPlayerStartY:integer;
-    fColor1,fColor2:uint32;
     fMapNo:integer;
     fMonsterData:array of TMonsterData;
-    fGradient:TGradient;
     function fGetMonsterCount:integer;
     function fGetMonster(index:integer):TMonsterData;
   public
@@ -43,12 +40,11 @@ type
     property MonsterCount:integer read fGetMonsterCount;
     property Monsters[index:integer]:TMonsterData read fGetMonster;
     property MapNo:integer read fMapNo;
-    property Gradient:TGradient read fGradient;
   end;
 
 implementation
 
-uses MKStream, W2Shared, MKToolbox;
+uses MKStream, W2Shared;
 
 { TMap }
 
@@ -68,13 +64,7 @@ begin
   fPlayerStartX:=0;
   fPlayerStartY:=0;
   fMapNo:=0;
-  fGradient:=TGradient.Create($ff202020,$ff909090);
-end;
-
-destructor TMap.Destroy;
-begin
-  fGradient.Free;
-  inherited Destroy;
+//  LogContent('---- MAP Data follows:');
 end;
 
 procedure TMap.LoadFromFile(pMapNo:integer);
@@ -83,14 +73,6 @@ var J,JD:TJSONData;Xs:TStream;JA:TJSONArray;x,y:integer;s:string;
   function min(i1,i2:integer):integer; inline;
   begin
     if i1>i2 then Result:=i2 else Result:=i1;
-  end;
-
-  function GetColor(const pPath:string;const pDefault:uint32):uint32;
-  begin
-    if Assigned(J.FindPath(pPath)) then
-      Result:=HexToInt('FF'+J.FindPath(pPath).AsString)
-    else
-      Result:=pDefault;
   end;
 
 begin
@@ -112,14 +94,6 @@ begin
     end;
     if Assigned(J.FindPath('Player.X')) then fPlayerStartX:=J.FindPath('Player.X').AsInteger;
     if Assigned(J.FindPath('Player.Y')) then fPlayerStartY:=J.FindPath('Player.Y').AsInteger;
-    fGradient.Colors[1]:=$ff000000;
-    fGradient.Colors[2]:=$ffeeeeee;
-    fGradient.Colors[3]:=GetColor('Color1',$ff202020);
-    fGradient.Colors[4]:=GetColor('Color2',$ff909090);
-    fGradient.ColorPositions[3]:=0.02;
-    fGradient.ColorUsed[3]:=true;
-    fGradient.ColorPositions[4]:=0.98;
-    fGradient.ColorUsed[4]:=true;
     if Assigned(J.FindPath('Monsters')) then begin
       JA:=TJSONArray(J.FindPath('Monsters'));
       SetLength(fMonsterData,JA.Count);

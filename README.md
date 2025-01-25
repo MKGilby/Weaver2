@@ -21,15 +21,8 @@ PNGOut tool is by Ken Silverman (http://advsys.net/ken)
 MKConv2, FontBuild2 and MAD4 tools are made by me.
 
 ## Compiled binaries from current build with datafiles and DLLs
-[x64](https://mksztsz.hu/tmpfiles/Weaver2_0.1.0.1.zip "Download x64 version") or
-[x86](https://mksztsz.hu/tmpfiles/Weaver2_x86_0.1.0.1.zip "Download x86 version").
-
-## 2025.01.20 - V0.1.0 Build 1
-- I got stuck drawing colored background tiles using current two color style, so
-  starting over, using full colors for gfx. In this commit I comment out or
-  remove all code and graphics associated with two colored version.
-- Border of game area is gray.
-- Floor, wall and zapper background color is set in map json file.
+[x64](https://mksztsz.hu/tmpfiles/Weaver2_0.0.0.11.zip "Download x64 version") or
+[x86](https://mksztsz.hu/tmpfiles/Weaver2_x86_0.0.0.11.zip "Download x86 version").
 
 ## 2025.01.19 - Build 11
 - Added horizontal enemy gfx.

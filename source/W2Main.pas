@@ -94,7 +94,7 @@ end;
 procedure TMain.Run;
 var Map:TMap;Play1Map:TPlay1Map;res,currentmap:integer;
 begin
-  currentmap:=1;
+  currentmap:=4;
   Map:=TMap.Create;
   try
     repeat

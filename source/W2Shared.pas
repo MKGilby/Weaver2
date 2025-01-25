@@ -101,6 +101,8 @@ const
 var
   Controller:PSDL_GameController;
   MM:TMediaManager;
+  MonoColor32:uint32;
+  MonoColorR,MonoColorG,MonoColorB:byte;
   Entities:TMapEntities;
   BlockCount:integer;
 
@@ -279,13 +281,60 @@ procedure LoadAssets;
 var Atlas:TTextureAtlasGenerator;Sprites:TARGBImage;
 //  i:integer;
 begin
+  MonoColor32:=$FFFF8000;  // Amber
+//  MonoColor32:=$FF00FF00;  // Green
+//  MonoColor32:=$FFFFFFFF;  // White
+
+  MonoColorR:=(MonoColor32 and $FF0000)>>16;
+  MonoColorG:=(MonoColor32 and $FF00)>>8;
+  MonoColorB:=(MonoColor32 and $FF);
   MM:=TMediaManager.Create;
-//  MM.Load('tiles.png','Tiles');
+  MM.Load('tiles.png','Tiles');
+  MM.Images.ItemByName['Tiles'].RecolorRGB(MonoColorR,MonoColorG,MonoColorB);
+  Sprites:=TARGBImage.Create('sprites_nonmasked.png');
+  try
+    Atlas:=TTextureAtlasGenerator.Create(1024,1024,1);
+    try
+      Atlas.AddImage(Sprites);
+      CreateAnim3('Block1','Block1Destroy',32,Sprites,Atlas);
+      CreateAnim3('Block2','Block2Destroy',32,Sprites,Atlas);
+      CreateAnim3('Block4','Block4Destroy',32,Sprites,Atlas);
+      CreateAnim1('Block3','Block1','Block3to1',32,Sprites,Atlas);
+      CreateAnim2('Block3','Block2','Block3to2',32,Sprites,Atlas);
+      CreateAnim1('Block5','Block4','Block5to4',32,Sprites,Atlas);
+      CreateAnim2('Block5','Block1','Block5to1',32,Sprites,Atlas);
+      CreateAnim1('Block6','Block2','Block6to2',32,Sprites,Atlas);
+      CreateAnim2('Block6','Block4','Block6to4',32,Sprites,Atlas);
+      Atlas.Crop;
+      Atlas.TextureAtlas.RecolorRGB(MonoColorR,MonoColorG,MonoColorB);
+      MM.AddImage(Atlas.TextureAtlas,'Sprites_nonmasked');
+      Atlas.FreeImage:=false;
+    finally
+      Atlas.Free
+    end;
+  finally
+    Sprites.Free;
+  end;
+  Sprites:=TARGBImage.Create('sprites_masked.png');
+  try
+    Atlas:=TTextureAtlasGenerator.Create(1024,1024,1);
+    try
+      Atlas.AddImage(Sprites);
+      Atlas.Crop;
+      Atlas.TextureAtlas.RecolorRGB(MonoColorR,MonoColorG,MonoColorB);
+      MM.AddImage(Atlas.TextureAtlas,'Sprites_masked',MM_CREATEMASKFORANIMATIONFRAMES);
+      Atlas.FreeImage:=false;
+    finally
+      Atlas.Free
+    end;
+  finally
+    Sprites.Free;
+  end;
   MM.Load('font1.png','Font1');
-//  MM.Fonts['Font1'].SetColor(MonoColorR,MonoColorG,MonoColorB);
+  MM.Fonts['Font1'].SetColor(MonoColorR,MonoColorG,MonoColorB);
   MM.Fonts['Font1'].SpaceSpace:=6;
   MM.Load('font2.png','Font2');
-//  MM.Fonts['Font2'].SetColor(MonoColorR,MonoColorG,MonoColorB);
+  MM.Fonts['Font2'].SetColor(MonoColorR,MonoColorG,MonoColorB);
   MM.Fonts['Font2'].SpaceSpace:=6;
 end;
 
