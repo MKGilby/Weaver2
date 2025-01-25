@@ -211,5 +211,41 @@
     "Paused" : true,
     "Frames" : [
       { "x" : 160, "y" : 64 }
+    ] },
+  { "Type" : "TimeBased",
+    "Name" : "ColorWall1",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 1,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : true,
+    "Frames" : [
+      { "x" : 192, "y" : 64 }
+    ] },
+  { "Type" : "TimeBased",
+    "Name" : "ColorWall2",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 1,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : true,
+    "Frames" : [
+      { "x" : 224, "y" : 64 }
+    ] },
+  { "Type" : "TimeBased",
+    "Name" : "ColorWall3",
+    "Width" : 32,
+    "Height" : 32,
+    "HotPoint" : { "x" : 0, "y" : 0 },
+    "FPS" : 1,
+    "LoopDelay" : 0,
+    "StartFrame" : 0,
+    "Paused" : true,
+    "Frames" : [
+      { "x" : 256, "y" : 64 }
     ] }
 ] }

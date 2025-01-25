@@ -34,8 +34,8 @@ uses
 
 const
   // Put these in the order of tiles in 'tiles.png'
-  TILES:array[0..11] of string=
-    ('Color1','Color2','Color3','Floor','Zapper','Wall',
+  TILES:array[0..12] of string=
+    ('Color1','Color2','Color3','Floor','Zapper','Wall','ColorWall',
      'Button1','Button2','Button3','Button4','Button5','Button6');
 
 { TPlay1Map }
@@ -51,29 +51,30 @@ begin
     for x:=-1 to MAPWIDTH do begin
       case fMap.OrigTiles[x,y] of
         LOADED_TILE_FLOOR:fMap.Tiles[x,y]:=TILE_FLOOR;
-        LOADED_TILE_WALL:fMap.Tiles[x,y]:=TILE_WALL or MOVEBLOCKALL;
+        LOADED_TILE_WALL:fMap.Tiles[x,y]:=TILE_WALL or BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL;
+        LOADED_TILE_COLORWALL0:fMap.Tiles[x,y]:=TILE_WALL or BLOCKPLAYERMOVEALL;
         LOADED_TILE_BLOCK1:begin
-          fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
+          fMap.Tiles[x,y]:=BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL or TILE_BLOCK;
           Entities.Add(TBlock.Create(x,y,COLOR1,fMap));
         end;
         LOADED_TILE_BLOCK2:begin
-          fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
+          fMap.Tiles[x,y]:=BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL or TILE_BLOCK;
           Entities.Add(TBlock.Create(x,y,COLOR2,fMap));
         end;
         LOADED_TILE_BLOCK3:begin
-          fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
+          fMap.Tiles[x,y]:=BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL or TILE_BLOCK;
           Entities.Add(TBlock.Create(x,y,COLOR1 or COLOR2,fMap));
         end;
         LOADED_TILE_BLOCK4:begin
-          fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
+          fMap.Tiles[x,y]:=BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL or TILE_BLOCK;
           Entities.Add(TBlock.Create(x,y,COLOR3,fMap));
         end;
         LOADED_TILE_BLOCK5:begin
-          fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
+          fMap.Tiles[x,y]:=BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL or TILE_BLOCK;
           Entities.Add(TBlock.Create(x,y,COLOR1 or COLOR3,fMap));
         end;
         LOADED_TILE_BLOCK6:begin
-          fMap.Tiles[x,y]:=MOVEBLOCKALL or TILE_BLOCK;
+          fMap.Tiles[x,y]:=BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL or TILE_BLOCK;
           Entities.Add(TBlock.Create(x,y,COLOR2 or COLOR3,fMap));
         end;
         LOADED_TILE_COLOR1:fMap.Tiles[x,y]:=TILE_COLOR1;
@@ -108,27 +109,27 @@ begin
           Entities.Add(TTeleport.Create(x,y,1,fMap));
         end;
         LOADED_TILE_DOOR1:begin
-          fMap.Tiles[x,y]:=TILE_DOOR or MOVEBLOCKALL;
+          fMap.Tiles[x,y]:=TILE_DOOR or BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL;
           Entities.Add(TDoor.Create(x,y,1,fMap));
         end;
         LOADED_TILE_DOOR2:begin
-          fMap.Tiles[x,y]:=TILE_DOOR or MOVEBLOCKALL;
+          fMap.Tiles[x,y]:=TILE_DOOR or BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL;
           Entities.Add(TDoor.Create(x,y,2,fMap));
         end;
         LOADED_TILE_DOOR3:begin
-          fMap.Tiles[x,y]:=TILE_DOOR or MOVEBLOCKALL;
+          fMap.Tiles[x,y]:=TILE_DOOR or BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL;
           Entities.Add(TDoor.Create(x,y,3,fMap));
         end;
         LOADED_TILE_DOOR4:begin
-          fMap.Tiles[x,y]:=TILE_DOOR or MOVEBLOCKALL;
+          fMap.Tiles[x,y]:=TILE_DOOR or BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL;
           Entities.Add(TDoor.Create(x,y,4,fMap));
         end;
         LOADED_TILE_DOOR5:begin
-          fMap.Tiles[x,y]:=TILE_DOOR or MOVEBLOCKALL;
+          fMap.Tiles[x,y]:=TILE_DOOR or BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL;
           Entities.Add(TDoor.Create(x,y,5,fMap));
         end;
         LOADED_TILE_DOOR6:begin
-          fMap.Tiles[x,y]:=TILE_DOOR or MOVEBLOCKALL;
+          fMap.Tiles[x,y]:=TILE_DOOR or BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL;
           Entities.Add(TDoor.Create(x,y,6,fMap));
         end;
         LOADED_TILE_DOORBUTTON1:begin
@@ -160,7 +161,7 @@ begin
   fPlayer:=TPlayer.Create(fMap);
   Entities.Add(fPlayer);
   for x:=0 to fMap.MonsterCount-1 do
-    Entities.Add(TMonster.Create(fMap,x));
+    Entities.Add(TEnemy.Create(fMap,x));
 end;
 
 destructor TPlay1Map.Destroy;
@@ -234,6 +235,7 @@ begin
             LOADED_TILE_DOORBUTTON4:s:='Button4';
             LOADED_TILE_DOORBUTTON5:s:='Button5';
             LOADED_TILE_DOORBUTTON6:s:='Button6';
+            LOADED_TILE_COLORWALL0:s:='ColorWall';
             else s:='Floor';
           end;
           ti:=IndexOfTile(s)*TILESIZE;

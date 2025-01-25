@@ -132,9 +132,9 @@ type
 
   TMonsterMove1pxProc=procedure of object;
 
-  { TMonster }
+  { TEnemy }
 
-  TMonster=class(TMapEntity)
+  TEnemy=class(TMapEntity)
     constructor Create(iMap:TMap;iNumber:integer);
     destructor Destroy; override;
     procedure Draw; override;
@@ -441,7 +441,7 @@ begin
   if keys[SDL_SCANCODE_UP] then begin
     if fx mod 32=0 then begin
       tile:=fMap.Tiles[pX,(fY+31) div TILESIZE-1];
-      if (tile and MOVEBLOCKFROMBELOW<>0) then begin
+      if (tile and BLOCKPLAYERMOVEFROMBELOW<>0) then begin
         fWantedDir:=DIRECTION_UP;
         newDir:=0;
         if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX,(fY+31) div TILESIZE-1]).Hit(fColor);
@@ -452,7 +452,7 @@ begin
   if keys[SDL_SCANCODE_RIGHT] then begin
     if fy mod 32=0 then begin
       tile:=fMap.Tiles[pX+1,pY];
-      if (tile and MOVEBLOCKFROMLEFT<>0) then begin
+      if (tile and BLOCKPLAYERMOVEFROMLEFT<>0) then begin
         fWantedDir:=DIRECTION_RIGHT;
         newDir:=0;
         if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX+1,pY]).Hit(fColor);
@@ -463,7 +463,7 @@ begin
   if keys[SDL_SCANCODE_DOWN] then begin
     if fx mod 32=0 then begin
       tile:=fMap.Tiles[pX,pY+1];
-      if (tile and MOVEBLOCKFROMABOVE<>0) then begin
+      if (tile and BLOCKPLAYERMOVEFROMABOVE<>0) then begin
         fWantedDir:=DIRECTION_DOWN;
         newDir:=0;
         if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[pX,pY+1]).Hit(fColor);
@@ -474,7 +474,7 @@ begin
   if keys[SDL_SCANCODE_LEFT] then begin
     if fy mod 32=0 then begin
       tile:=fMap.Tiles[(fX+31) div TILESIZE-1,pY];
-      if (tile and MOVEBLOCKFROMRIGHT<>0) then begin
+      if (tile and BLOCKPLAYERMOVEFROMRIGHT<>0) then begin
         fWantedDir:=DIRECTION_LEFT;
         newDir:=0;
         if (tile and TILE_MASK=TILE_BLOCK) then TBlock(Entities.EntityAt[(fX+31) div TILESIZE-1,pY]).Hit(fColor);
@@ -488,8 +488,8 @@ begin
       DIRECTION_UP:begin
         if fY mod 32=0 then begin
           tile:=fMap.Tiles[pX,(fY+31) div TILESIZE-1];
-          if (tile and MOVEBLOCKFROMBELOW<>0) then begin
-            if (fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE<>0) then begin
+          if (tile and BLOCKPLAYERMOVEFROMBELOW<>0) then begin
+            if (fMap.Tiles[pX,pY+1] and BLOCKPLAYERMOVEFROMABOVE<>0) then begin
               fWantedDir:=DIRECTION_UP;
               newDir:=0;
             end else newDir:=DIRECTION_DOWN;
@@ -501,8 +501,8 @@ begin
       DIRECTION_RIGHT:begin
         if fX mod 32=0 then begin
           tile:=fMap.Tiles[pX+1,pY];
-          if (tile and MOVEBLOCKFROMLEFT<>0) then begin
-            if (fMap.Tiles[(fX+31) div TILESIZE-1,pY] and MOVEBLOCKFROMRIGHT<>0) then begin
+          if (tile and BLOCKPLAYERMOVEFROMLEFT<>0) then begin
+            if (fMap.Tiles[(fX+31) div TILESIZE-1,pY] and BLOCKPLAYERMOVEFROMRIGHT<>0) then begin
               fWantedDir:=DIRECTION_RIGHT;
               newDir:=0;
             end else newDir:=DIRECTION_LEFT;
@@ -514,8 +514,8 @@ begin
       DIRECTION_DOWN:begin
         if fY mod 32=0 then begin
           tile:=fMap.Tiles[pX,pY+1];
-          if (tile and MOVEBLOCKFROMABOVE<>0) then begin
-            if (fMap.Tiles[pX,(fY+31) div TILESIZE-1] and MOVEBLOCKFROMBELOW<>0) then begin
+          if (tile and BLOCKPLAYERMOVEFROMABOVE<>0) then begin
+            if (fMap.Tiles[pX,(fY+31) div TILESIZE-1] and BLOCKPLAYERMOVEFROMBELOW<>0) then begin
               fWantedDir:=DIRECTION_DOWN;
               newDir:=0;
             end else newDir:=DIRECTION_UP;
@@ -527,8 +527,8 @@ begin
       DIRECTION_LEFT:begin
         if fX mod 32=0 then begin
           tile:=fMap.Tiles[(fX+31) div TILESIZE-1,pY];
-          if (tile and MOVEBLOCKFROMRIGHT<>0) then begin
-            if (fMap.Tiles[pX+1,pY] and MOVEBLOCKFROMLEFT<>0) then begin
+          if (tile and BLOCKPLAYERMOVEFROMRIGHT<>0) then begin
+            if (fMap.Tiles[pX+1,pY] and BLOCKPLAYERMOVEFROMLEFT<>0) then begin
               fWantedDir:=DIRECTION_LEFT;
               newDir:=0;
             end else newDir:=DIRECTION_RIGHT;
@@ -671,10 +671,10 @@ end;
 
 {$endregion}
 
-{ TMonster }
+{ TEnemy }
 {$region /fold}
 
-constructor TMonster.Create(iMap:TMap; iNumber:integer);
+constructor TEnemy.Create(iMap:TMap; iNumber:integer);
 var tmp:TMonsterData;i:integer;
 begin
   fMap:=iMap;
@@ -709,19 +709,19 @@ begin
   Enemy:=true;
 end;
 
-destructor TMonster.Destroy;
+destructor TEnemy.Destroy;
 begin
   TCollisionChecker.DestroyCollisionData(fCollisionData);
   fAnimation.Free;
   inherited Destroy;
 end;
 
-procedure TMonster.Draw;
+procedure TEnemy.Draw;
 begin
   fAnimation.PutFrame(fX+MAPLEFT,fY+MAPTOP);
 end;
 
-procedure TMonster.Move(pElapsedTime:double);
+procedure TEnemy.Move(pElapsedTime:double);
 begin
   fAnimation.Animate(pElapsedTime);
   // While ellapsed time greater than remaining time until next pixel move, do pixel move.
@@ -733,7 +733,7 @@ begin
   fPixelMoveRemainingTime:=fPixelMoveRemainingTime-pElapsedTime;
 end;
 
-procedure TMonster.Move1pxVertical;
+procedure TEnemy.Move1pxVertical;
 begin
   if fY mod 32=0 then begin
     fpY:=fY div 32;
@@ -745,7 +745,7 @@ begin
   end;
 end;
 
-procedure TMonster.Move1pxHorizontal;
+procedure TEnemy.Move1pxHorizontal;
 begin
   if fX mod 32=0 then begin
     fpX:=fX div 32;
@@ -757,7 +757,7 @@ begin
   end;
 end;
 
-procedure TMonster.Move1pxRoamer;
+procedure TEnemy.Move1pxRoamer;
 begin
   if (fX mod 32=0) and (fy mod 32=0) then begin
     fpX:=fX div 32;
@@ -772,15 +772,15 @@ begin
   end;
 end;
 
-function TMonster.NewDirVertical(pCurrentDir:integer):integer;
+function TEnemy.NewDirVertical(pCurrentDir:integer):integer;
 begin
   if pCurrentDir=DIRECTION_NONE then pCurrentDir:=VERTICALDIRS[random(length(VERTICALDIRS))];
   case pCurrentDir of
     DIRECTION_UP:begin
       // Is something blocking the way up?
-      if fMap.Tiles[pX,pY-1] and MOVEBLOCKFROMBELOW<>0 then begin
+      if fMap.Tiles[pX,pY-1] and BLOCKENEMYMOVEFROMBELOW<>0 then begin
         // Can move down instead?
-        if fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE=0 then
+        if fMap.Tiles[pX,pY+1] and BLOCKENEMYMOVEFROMABOVE=0 then
           Result:=DIRECTION_DOWN
         else
           // Do not move then.
@@ -790,9 +790,9 @@ begin
     end;
     DIRECTION_DOWN:begin
       // Is something blocking the way down?
-      if fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE<>0 then begin
+      if fMap.Tiles[pX,pY+1] and BLOCKENEMYMOVEFROMABOVE<>0 then begin
         // Can move up instead?
-        if fMap.Tiles[pX,pY-1] and MOVEBLOCKFROMBELOW=0 then
+        if fMap.Tiles[pX,pY-1] and BLOCKENEMYMOVEFROMBELOW=0 then
           Result:=DIRECTION_UP
         else
           // Do not move then.
@@ -804,15 +804,15 @@ begin
   end;
 end;
 
-function TMonster.NewDirHorizontal(pCurrentDir:integer):integer;
+function TEnemy.NewDirHorizontal(pCurrentDir:integer):integer;
 begin
   if pCurrentDir=DIRECTION_NONE then pCurrentDir:=HORIZONTALDIRS[random(length(HORIZONTALDIRS))];
   case pCurrentDir of
     DIRECTION_LEFT:begin
       // Is something blocking the way left?
-      if fMap.Tiles[pX-1,pY] and MOVEBLOCKFROMRIGHT<>0 then begin
+      if fMap.Tiles[pX-1,pY] and BLOCKENEMYMOVEFROMRIGHT<>0 then begin
         // Can move right instead?
-        if fMap.Tiles[pX+1,pY] and MOVEBLOCKFROMLEFT=0 then
+        if fMap.Tiles[pX+1,pY] and BLOCKENEMYMOVEFROMLEFT=0 then
           Result:=DIRECTION_RIGHT
         else
           // Do not move then.
@@ -822,9 +822,9 @@ begin
     end;
     DIRECTION_RIGHT:begin
       // Is something blocking the way right?
-      if fMap.Tiles[pX+1,pY] and MOVEBLOCKFROMLEFT<>0 then begin
+      if fMap.Tiles[pX+1,pY] and BLOCKENEMYMOVEFROMLEFT<>0 then begin
         // Can move left instead?
-        if fMap.Tiles[pX-1,pY] and MOVEBLOCKFROMRIGHT=0 then
+        if fMap.Tiles[pX-1,pY] and BLOCKENEMYMOVEFROMRIGHT=0 then
           Result:=DIRECTION_LEFT
         else
           // Do not move then.
@@ -836,17 +836,17 @@ begin
   end;
 end;
 
-function TMonster.NewDirRoamer(pCurrentDir:integer):integer;
+function TEnemy.NewDirRoamer(pCurrentDir:integer):integer;
 var dirs:string;i:integer;
 begin
   if pCurrentDir=DIRECTION_NONE then pCurrentDir:=ALLDIRS[random(length(ALLDIRS))];
   case pCurrentDir of
     DIRECTION_UP:begin
       // Is something blocking the way up?
-      if fMap.Tiles[pX,pY-1] and MOVEBLOCKFROMBELOW<>0 then begin  // Yes
+      if fMap.Tiles[pX,pY-1] and BLOCKENEMYMOVEFROMBELOW<>0 then begin  // Yes
         dirs:='0000';
-        if fMap.Tiles[pX+1,pY] and MOVEBLOCKFROMLEFT=0 then dirs[2]:='1';
-        if fMap.Tiles[pX-1,pY] and MOVEBLOCKFROMRIGHT=0 then dirs[4]:='1';
+        if fMap.Tiles[pX+1,pY] and BLOCKENEMYMOVEFROMLEFT=0 then dirs[2]:='1';
+        if fMap.Tiles[pX-1,pY] and BLOCKENEMYMOVEFROMRIGHT=0 then dirs[4]:='1';
         // Can go left or right?
         if dirs<>'0000' then begin  // Yes
           // Choose randomly
@@ -856,7 +856,7 @@ begin
           Result:=ALLDIRS[i];
         end else begin  // No
           // Can go down?
-          if fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE=0 then
+          if fMap.Tiles[pX,pY+1] and BLOCKENEMYMOVEFROMABOVE=0 then
             Result:=DIRECTION_DOWN
           else
             Result:=DIRECTION_NONE;
@@ -866,10 +866,10 @@ begin
     end;
     DIRECTION_RIGHT:begin
       // Is something blocking the way right?
-      if fMap.Tiles[pX+1,pY] and MOVEBLOCKFROMLEFT<>0 then begin  // Yes
+      if fMap.Tiles[pX+1,pY] and BLOCKENEMYMOVEFROMLEFT<>0 then begin  // Yes
         dirs:='0000';
-        if fMap.Tiles[pX,pY-1] and MOVEBLOCKFROMBELOW=0 then dirs[1]:='1';
-        if fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE=0 then dirs[3]:='1';
+        if fMap.Tiles[pX,pY-1] and BLOCKENEMYMOVEFROMBELOW=0 then dirs[1]:='1';
+        if fMap.Tiles[pX,pY+1] and BLOCKENEMYMOVEFROMABOVE=0 then dirs[3]:='1';
         // Can go up or down?
         if dirs<>'0000' then begin  // Yes
           // Choose randomly
@@ -879,7 +879,7 @@ begin
           Result:=ALLDIRS[i];
         end else begin  // No
           // Can go left?
-          if fMap.Tiles[pX-1,pY] and MOVEBLOCKFROMRIGHT=0 then
+          if fMap.Tiles[pX-1,pY] and BLOCKENEMYMOVEFROMRIGHT=0 then
             Result:=DIRECTION_LEFT
           else
             Result:=DIRECTION_NONE;
@@ -889,10 +889,10 @@ begin
     end;
     DIRECTION_DOWN:begin
       // Is something blocking the way down?
-      if fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE<>0 then begin  // Yes
+      if fMap.Tiles[pX,pY+1] and BLOCKENEMYMOVEFROMABOVE<>0 then begin  // Yes
         dirs:='0000';
-        if fMap.Tiles[pX+1,pY] and MOVEBLOCKFROMLEFT=0 then dirs[2]:='1';
-        if fMap.Tiles[pX-1,pY] and MOVEBLOCKFROMRIGHT=0 then dirs[4]:='1';
+        if fMap.Tiles[pX+1,pY] and BLOCKENEMYMOVEFROMLEFT=0 then dirs[2]:='1';
+        if fMap.Tiles[pX-1,pY] and BLOCKENEMYMOVEFROMRIGHT=0 then dirs[4]:='1';
         // Can go left or right?
         if dirs<>'0000' then begin  // Yes
           // Choose randomly
@@ -902,7 +902,7 @@ begin
           Result:=ALLDIRS[i];
         end else begin  // No
           // Can go up?
-          if fMap.Tiles[pX,pY-1] and MOVEBLOCKFROMBELOW=0 then
+          if fMap.Tiles[pX,pY-1] and BLOCKENEMYMOVEFROMBELOW=0 then
             Result:=DIRECTION_UP
           else
             Result:=DIRECTION_NONE;
@@ -912,10 +912,10 @@ begin
     end;
     DIRECTION_LEFT:begin
       // Is something blocking the way left?
-      if fMap.Tiles[pX-1,pY] and MOVEBLOCKFROMRIGHT<>0 then begin  // Yes
+      if fMap.Tiles[pX-1,pY] and BLOCKENEMYMOVEFROMRIGHT<>0 then begin  // Yes
         dirs:='0000';
-        if fMap.Tiles[pX,pY-1] and MOVEBLOCKFROMBELOW=0 then dirs[1]:='1';
-        if fMap.Tiles[pX,pY+1] and MOVEBLOCKFROMABOVE=0 then dirs[3]:='1';
+        if fMap.Tiles[pX,pY-1] and BLOCKENEMYMOVEFROMBELOW=0 then dirs[1]:='1';
+        if fMap.Tiles[pX,pY+1] and BLOCKENEMYMOVEFROMABOVE=0 then dirs[3]:='1';
         // Can go up or down?
         if dirs<>'0000' then begin  // Yes
           // Choose randomly
@@ -925,7 +925,7 @@ begin
           Result:=ALLDIRS[i];
         end else begin  // No
           // Can go right?
-          if fMap.Tiles[pX+1,pY] and MOVEBLOCKFROMLEFT=0 then
+          if fMap.Tiles[pX+1,pY] and BLOCKENEMYMOVEFROMLEFT=0 then
             Result:=DIRECTION_RIGHT
           else
             Result:=DIRECTION_NONE;
@@ -937,7 +937,7 @@ begin
   end;
 end;
 
-function TMonster.fGetCollisionData:PCollisionData;
+function TEnemy.fGetCollisionData:PCollisionData;
 begin
   fCollisionData._mask:=fMasks[fAnimation.Timer.CurrentFrameIndex];
   fCollisionData._x:=fX;
