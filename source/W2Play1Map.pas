@@ -52,7 +52,19 @@ begin
       case fMap.OrigTiles[x,y] of
         LOADED_TILE_FLOOR:fMap.Tiles[x,y]:=TILE_FLOOR;
         LOADED_TILE_WALL:fMap.Tiles[x,y]:=TILE_WALL or BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL;
-        LOADED_TILE_COLORWALL0:fMap.Tiles[x,y]:=TILE_WALL or BLOCKPLAYERMOVEALL;
+        LOADED_TILE_SHORTWALL:fMap.Tiles[x,y]:=TILE_WALL or BLOCKPLAYERMOVEALL;
+        LOADED_TILE_SHORTWALL1:begin
+          fMap.Tiles[x,y]:=TILE_WALL or BLOCKPLAYERMOVEALL;
+          Entities.Add(TShortColoredWall.Create(x,y,COLOR1,fMap));
+        end;
+        LOADED_TILE_SHORTWALL2:begin
+          fMap.Tiles[x,y]:=TILE_WALL or BLOCKPLAYERMOVEALL;
+          Entities.Add(TShortColoredWall.Create(x,y,COLOR2,fMap));
+        end;
+        LOADED_TILE_SHORTWALL3:begin
+          fMap.Tiles[x,y]:=TILE_WALL or BLOCKPLAYERMOVEALL;
+          Entities.Add(TShortColoredWall.Create(x,y,COLOR3,fMap));
+        end;
         LOADED_TILE_BLOCK1:begin
           fMap.Tiles[x,y]:=BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL or TILE_BLOCK;
           Entities.Add(TBlock.Create(x,y,COLOR1,fMap));
@@ -162,6 +174,7 @@ begin
   Entities.Add(fPlayer);
   for x:=0 to fMap.MonsterCount-1 do
     Entities.Add(TEnemy.Create(fMap,x));
+  Entities.HideColoredWalls(COLOR3);
 end;
 
 destructor TPlay1Map.Destroy;
@@ -235,7 +248,7 @@ begin
             LOADED_TILE_DOORBUTTON4:s:='Button4';
             LOADED_TILE_DOORBUTTON5:s:='Button5';
             LOADED_TILE_DOORBUTTON6:s:='Button6';
-            LOADED_TILE_COLORWALL0:s:='ColorWall';
+            LOADED_TILE_SHORTWALL:s:='ColorWall';
             else s:='Floor';
           end;
           ti:=IndexOfTile(s)*TILESIZE;

@@ -3,26 +3,32 @@ Remake of Weaver 2 a 1990 Commodore 64 game by '64er
 
 Original version Copyright 1990 '64er
 
-This version Copyright 2025 MKSZTSZ
+This version Copyright 2024-2025 MKSZTSZ
 
 ## Programming language
 FreePascal (Lazarus 4.0.0rc2 with FPC 3.2.2)
-https://www.lazarus-ide.org/
+[Lazarus homepage](https://www.lazarus-ide.org/)
 
 ## Source codes
 SDL2 pascal headers (source\units\sdl2) is licensed under MPL or zlib license.
-GitHub for SDL2 pascal headers: https://github.com/PascalGameDevelopment/SDL2-for-Pascal
+GitHub for SDL2 pascal headers: [PascalGameDevelopment/SDL2-for-Pascal](https://github.com/PascalGameDevelopment/SDL2-for-Pascal)
 
 The rest of source code is licensed under GNU GPL v3 (or later).
 
 ## Tools
-PNGOut tool is by Ken Silverman (http://advsys.net/ken)
+PNGOut tool is by Ken Silverman [His homepage](http://advsys.net/ken)
 
 MKConv2, FontBuild2 and MAD4 tools are made by me.
 
 ## Compiled binaries from current build with datafiles and DLLs
 [x64](https://mksztsz.hu/tmpfiles/Weaver2_0.0.0.12.zip "Download x64 version") or
 [x86](https://mksztsz.hu/tmpfiles/Weaver2_x86_0.0.0.12.zip "Download x86 version").
+
+## 2025.01.29 - Build 13
+- Added sixth map.
+- Added "colored" short wall. Enemies can pass it, you can't. The walls having
+  the same color as you will disappear, but will reappear when changing to
+  another color.
 
 ## 2025.01.25 - Build 12
 - Added fifth map.

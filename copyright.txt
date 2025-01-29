@@ -1,6 +1,6 @@
 Remake of Weaver 2 a 1990 Commodore 64 game by '64er
 Original version Copyright 1990 '64er
-This version Copyright 2024 MKSZTSZ
+This version Copyright 2024-2025 MKSZTSZ
 Written by Szabó "Gilby" Zsolt / MKSZTSZ
 
 This file is part of the source code of Weawer 2.

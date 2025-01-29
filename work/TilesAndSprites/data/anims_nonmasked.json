@@ -237,7 +237,7 @@
       { "x" : 224, "y" : 64 }
     ] },
   { "Type" : "TimeBased",
-    "Name" : "ColorWall3",
+    "Name" : "ColorWall4",
     "Width" : 32,
     "Height" : 32,
     "HotPoint" : { "x" : 0, "y" : 0 },

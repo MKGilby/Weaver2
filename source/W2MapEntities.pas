@@ -40,6 +40,7 @@ type
     procedure Draw;
     procedure Move(pElapsedTime:double);
     function IsPlayerCollidedWithEnemies(pPlayerCollisionData:PCollisionData):boolean;
+    procedure HideColoredWalls(pColor:integer);
   private
     procedure MoveEx(pElapsedTime:double);
     function fGetEntityAt(x,y:integer):TMapEntity;
@@ -179,6 +180,23 @@ type
     fMap:TMap;
   end;
 
+  { TShortColoredWall }
+
+  TShortColoredWall=class(TMapEntity)
+    constructor Create(ipX,ipY,iColor:integer;iMap:TMap);
+    destructor Destroy; override;
+    procedure Draw; override;
+    procedure Show;
+    procedure Hide;
+  private
+    fMap:TMap;
+    fColor:integer;
+    fAnimation:TAnimation;
+    fVisible:boolean;
+  public
+    property Color:integer read fColor;
+  end;
+
 implementation
 
 uses W2Shared, mk_sdl2, sdl2, Logger;
@@ -251,6 +269,16 @@ begin
     Result:=Result or
       (Items[i].Enemy and
        TCollisionChecker.IsCollideNonZero(pPlayerCollisionData,Items[i].CollisionData));
+end;
+
+procedure TMapEntities.HideColoredWalls(pColor: integer);
+var i:integer;
+begin
+  for i:=0 to Self.Count-1 do
+    if Self[i] is TShortColoredWall then
+      with TShortColoredWall(Self[i]) do begin
+        if fColor=pColor then Hide else Show;
+      end;
 end;
 
 procedure TMapEntities.MoveEx(pElapsedTime:double);
@@ -394,7 +422,7 @@ begin
   inherited Create(iMap.PlayerStartX,iMap.PlayerStartY);
   fMap:=iMap;
   fDir:=DIRECTION_NONE;
-  fColor:=COLOR1;
+  fColor:=COLOR3;
   fAnimation:=MM.Animations.ItemByName['Ship'].SpawnAnimation;
   fShield:=3;
   fPixelMoveRemainingTime:=PLAYERTIMEPERPIXEL;
@@ -548,9 +576,18 @@ begin
   end;
   if (fX mod 32=0) and (fY mod 32=0) then begin
     case fMap.Tiles[fX div TILESIZE,fY div TILESIZE] of
-      TILE_COLOR1:fColor:=COLOR1;
-      TILE_COLOR2:fColor:=COLOR2;
-      TILE_COLOR3:fColor:=COLOR3;
+      TILE_COLOR1:begin
+                    fColor:=COLOR1;
+                    Entities.HideColoredWalls(COLOR1);
+                  end;
+      TILE_COLOR2:begin
+                    fColor:=COLOR2;
+                    Entities.HideColoredWalls(COLOR2);
+                  end;
+      TILE_COLOR3:begin
+                    fColor:=COLOR3;
+                    Entities.HideColoredWalls(COLOR3);
+                  end;
       TILE_EXIT:if BlockCount=0 then fState:=psExit;
       TILE_TELEPORT:begin
                       fpX:=TTeleport(Entities.EntityAt[fX div TILESIZE,fY div TILESIZE]).PairX;
@@ -1015,6 +1052,43 @@ procedure TDoorButton.Hit;
 begin
   TDoor(Entities.EntityAt[fPairX,fPairY]).Open;
   fMap.Tiles[fpX,fpY]:=TILE_FLOOR;  // To prevent hitting again.
+end;
+
+{$endregion}
+
+{ TShortColoredWall }
+{$region /fold}
+
+constructor TShortColoredWall.Create(ipX, ipY, iColor: integer; iMap: TMap);
+begin
+  inherited Create(ipX,ipY);
+  fColor:=iColor;
+  fMap:=iMap;
+  fAnimation:=MM.Animations.ItemByName[Format('ColorWall%d',[fColor])].SpawnAnimation;;
+  fVisible:=true;
+end;
+
+destructor TShortColoredWall.Destroy;
+begin
+  fAnimation.Free;
+  inherited Destroy;
+end;
+
+procedure TShortColoredWall.Draw;
+begin
+  if fVisible then fAnimation.PutFrame(fX+MAPLEFT,fY+MAPTOP);
+end;
+
+procedure TShortColoredWall.Show;
+begin
+  fMap.Tiles[fpX,fpY]:=TILE_WALL or BLOCKPLAYERMOVEALL;
+  fVisible:=true;
+end;
+
+procedure TShortColoredWall.Hide;
+begin
+  fMap.Tiles[fpX,fpY]:=TILE_FLOOR;
+  fVisible:=false;
 end;
 
 {$endregion}

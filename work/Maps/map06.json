@@ -1,0 +1,20 @@
+{
+  "Tiles" : [
+    "MMMMMMMMMzMMMMM",
+    "MMLXLYLZ#4#AMMM",
+    "MMMLMMMLM4MKKKM",
+    "MMMLMMMLMMMMMKM",
+    "MLLLK4KLMKKMMKK",
+    "M.M2KMKMMKMMzMz",
+    "MLMLKzKK4KMM1MK",
+    "MLMMxMK44KK111K",
+    "#LL#1KKMMMMM1MC",
+    "MML41MMMLMBMKLM",
+    "MLLLKMMMLL22LLL",
+    "MMMLLLzLLMMMMMM"
+  ],
+  "Player" : {
+    "X" : 0,
+    "Y" : 0
+  }
+}
