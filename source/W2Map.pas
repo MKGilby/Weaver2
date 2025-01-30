@@ -29,7 +29,7 @@ type
     constructor Create;
     procedure LoadFromFile(pMapNo:integer);
   private
-    fPlayerStartX,fPlayerStartY:integer;
+    fPlayerStartX,fPlayerStartY,fPlayerColor:integer;
     fMapNo:integer;
     fMonsterData:array of TMonsterData;
     function fGetMonsterCount:integer;
@@ -37,6 +37,7 @@ type
   public
     property PlayerStartX:integer read fPlayerStartX;
     property PlayerStartY:integer read fPlayerStartY;
+    property PlayerColor:integer read fPlayerColor;
     property MonsterCount:integer read fGetMonsterCount;
     property Monsters[index:integer]:TMonsterData read fGetMonster;
     property MapNo:integer read fMapNo;
@@ -94,6 +95,10 @@ begin
     end;
     if Assigned(J.FindPath('Player.X')) then fPlayerStartX:=J.FindPath('Player.X').AsInteger;
     if Assigned(J.FindPath('Player.Y')) then fPlayerStartY:=J.FindPath('Player.Y').AsInteger;
+    if Assigned(J.FindPath('Player.Color')) then
+      fPlayerColor:=J.FindPath('Player.Color').AsInteger
+    else
+      fPlayerColor:=3;  // Start as "blue"
     if Assigned(J.FindPath('Monsters')) then begin
       JA:=TJSONArray(J.FindPath('Monsters'));
       SetLength(fMonsterData,JA.Count);

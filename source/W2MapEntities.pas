@@ -101,6 +101,7 @@ type
     function fGetCollisionData:PCollisionData; override;
   public
     property State:TPlayerExternalState read fState;
+    property Color:integer read fColor;
   end;
 
   { TExit }
@@ -422,7 +423,11 @@ begin
   inherited Create(iMap.PlayerStartX,iMap.PlayerStartY);
   fMap:=iMap;
   fDir:=DIRECTION_NONE;
-  fColor:=COLOR3;
+  case iMap.PlayerColor of
+    1:fColor:=COLOR1;
+    2:fColor:=COLOR2;
+    3:fColor:=COLOR3;
+  end;
   fAnimation:=MM.Animations.ItemByName['Ship'].SpawnAnimation;
   fShield:=3;
   fPixelMoveRemainingTime:=PLAYERTIMEPERPIXEL;

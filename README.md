@@ -21,8 +21,18 @@ PNGOut tool is by Ken Silverman [His homepage](http://advsys.net/ken)
 MKConv2, FontBuild2 and MAD4 tools are made by me.
 
 ## Compiled binaries from current build with datafiles and DLLs
-[x64](https://mksztsz.hu/tmpfiles/Weaver2_0.0.0.12.zip "Download x64 version") or
-[x86](https://mksztsz.hu/tmpfiles/Weaver2_x86_0.0.0.12.zip "Download x86 version").
+[x64](https://mksztsz.hu/tmpfiles/Weaver2_0.0.0.14.zip "Download x64 version") or
+[x86](https://mksztsz.hu/tmpfiles/Weaver2_x86_0.0.0.14.zip "Download x86 version").
+
+## 2025.01.30 - Build 14
+- Added seventh and eighth map.
+- Block crumbling speed increased.
+- Redesigned colored blocks.
+- Added enemy blocking wall.
+- Added arrows (make player and roamer enemy move that direction and blocks moving
+  opposite direction).
+- Player start color can be set in map file.
+- Fixed player start color in map 5.
 
 ## 2025.01.29 - Build 13
 - Added sixth map.

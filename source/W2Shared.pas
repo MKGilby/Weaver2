@@ -67,6 +67,11 @@ const
   LOADED_TILE_SHORTWALL1=ord('K');
   LOADED_TILE_SHORTWALL2=ord('L');
   LOADED_TILE_SHORTWALL3=ord('M');
+  LOADED_TILE_MONSTERWALL=ord('%');
+  LOADED_TILE_ARROW_UP=ord('^');
+  LOADED_TILE_ARROW_RIGHT=ord('>');
+  LOADED_TILE_ARROW_DOWN=ord('v');
+  LOADED_TILE_ARROW_LEFT=ord('<');
 
   BLOCKPLAYERMOVEFROMABOVE=$0100;
   BLOCKPLAYERMOVEFROMBELOW=$0400;
@@ -147,7 +152,7 @@ begin
     try
       tmpA:=TTimeBasedAnimationData.Create(TILESIZE,TILESIZE);
       tmpA.Name:=pTargetAnimName;
-      tmpA.FPS:=pSteps;
+      tmpA.FPS:=pSteps*2;
       tmpA.Looped:=false;
       tmpA.StartFrame:=0;
       tmpA.RandomStart:=false;
@@ -204,7 +209,7 @@ begin
     try
       tmpA:=TTimeBasedAnimationData.Create(TILESIZE,TILESIZE);
       tmpA.Name:=pTargetAnimName;
-      tmpA.FPS:=pSteps;
+      tmpA.FPS:=pSteps*2;
       tmpA.Looped:=false;
       tmpA.StartFrame:=0;
       tmpA.RandomStart:=false;
@@ -257,7 +262,7 @@ begin
   try
     tmpA:=TTimeBasedAnimationData.Create(TILESIZE,TILESIZE);
     tmpA.Name:=pTargetAnimName;
-    tmpA.FPS:=pSteps;
+    tmpA.FPS:=pSteps*2;
     tmpA.Looped:=false;
     tmpA.StartFrame:=0;
     tmpA.RandomStart:=false;
@@ -306,15 +311,15 @@ begin
     Atlas:=TTextureAtlasGenerator.Create(1024,1024,1);
     try
       Atlas.AddImage(Sprites);
-      CreateAnim3('Block1','Block1Destroy',32,Sprites,Atlas);
-      CreateAnim3('Block2','Block2Destroy',32,Sprites,Atlas);
-      CreateAnim3('Block4','Block4Destroy',32,Sprites,Atlas);
-      CreateAnim1('Block3','Block1','Block3to1',32,Sprites,Atlas);
-      CreateAnim2('Block3','Block2','Block3to2',32,Sprites,Atlas);
-      CreateAnim1('Block5','Block4','Block5to4',32,Sprites,Atlas);
-      CreateAnim2('Block5','Block1','Block5to1',32,Sprites,Atlas);
-      CreateAnim1('Block6','Block2','Block6to2',32,Sprites,Atlas);
-      CreateAnim2('Block6','Block4','Block6to4',32,Sprites,Atlas);
+      CreateAnim3('Block1','Block1Destroy',16,Sprites,Atlas);
+      CreateAnim3('Block2','Block2Destroy',16,Sprites,Atlas);
+      CreateAnim3('Block4','Block4Destroy',16,Sprites,Atlas);
+      CreateAnim1('Block3','Block1','Block3to1',16,Sprites,Atlas);
+      CreateAnim2('Block3','Block2','Block3to2',16,Sprites,Atlas);
+      CreateAnim1('Block5','Block4','Block5to4',16,Sprites,Atlas);
+      CreateAnim2('Block5','Block1','Block5to1',16,Sprites,Atlas);
+      CreateAnim1('Block6','Block2','Block6to2',16,Sprites,Atlas);
+      CreateAnim2('Block6','Block4','Block6to4',16,Sprites,Atlas);
       Atlas.Crop;
       Atlas.TextureAtlas.RecolorRGB(MonoColorR,MonoColorG,MonoColorB);
       MM.AddImage(Atlas.TextureAtlas,'Sprites_nonmasked');

@@ -34,14 +34,14 @@ uses
 
 const
   // Put these in the order of tiles in 'tiles.png'
-  TILES:array[0..12] of string=
-    ('Color1','Color2','Color3','Floor','Zapper','Wall','ColorWall',
-     'Button1','Button2','Button3','Button4','Button5','Button6');
+  TILES:array[0..17] of string=
+    ('Color1','Color2','Color3','Floor','Zapper','Wall','ShortWall','ArrowUp','ArrowRight',
+     'Button1','Button2','Button3','Button4','Button5','Button6','EnemyBlock','ArrowDown','ArrowLeft');
 
 { TPlay1Map }
 
 constructor TPlay1Map.Create(iMap: TMap);
-var x,y:integer;
+var x,y,mv:integer;
 begin
   fMap:=iMap;
   Entities:=TMapEntities.Create;
@@ -64,6 +64,9 @@ begin
         LOADED_TILE_SHORTWALL3:begin
           fMap.Tiles[x,y]:=TILE_WALL or BLOCKPLAYERMOVEALL;
           Entities.Add(TShortColoredWall.Create(x,y,COLOR3,fMap));
+        end;
+        LOADED_TILE_MONSTERWALL:begin
+          fMap.Tiles[x,y]:=TILE_FLOOR or BLOCKENEMYMOVEALL;
         end;
         LOADED_TILE_BLOCK1:begin
           fMap.Tiles[x,y]:=BLOCKPLAYERMOVEALL or BLOCKENEMYMOVEALL or TILE_BLOCK;
@@ -170,11 +173,40 @@ begin
         end;
       end;
     end;
+  for y:=-1 to MAPHEIGHT do
+    for x:=-1 to MAPWIDTH do begin
+      case fMap.OrigTiles[x,y] of
+        LOADED_TILE_ARROW_UP:begin
+          fMap.Tiles[x,y]:=fMap.Tiles[x,y] or BLOCKPLAYERMOVEFROMABOVE or BLOCKENEMYMOVEFROMABOVE;
+          fMap.Tiles[x,y+1]:=fMap.Tiles[x,y+1] or BLOCKPLAYERMOVEFROMABOVE or BLOCKENEMYMOVEFROMABOVE;
+          fMap.Tiles[x+1,y]:=fMap.Tiles[x+1,y] or BLOCKPLAYERMOVEFROMRIGHT or BLOCKENEMYMOVEFROMRIGHT;
+          fMap.Tiles[x-1,y]:=fMap.Tiles[x-1,y] or BLOCKPLAYERMOVEFROMLEFT or BLOCKENEMYMOVEFROMLEFT;
+        end;
+        LOADED_TILE_ARROW_RIGHT:begin
+          fMap.Tiles[x,y]:=fMap.Tiles[x,y] or BLOCKPLAYERMOVEFROMRIGHT or BLOCKENEMYMOVEFROMRIGHT;
+          fMap.Tiles[x-1,y]:=fMap.Tiles[x-1,y] or BLOCKPLAYERMOVEFROMRIGHT or BLOCKENEMYMOVEFROMRIGHT;
+          fMap.Tiles[x,y-1]:=fMap.Tiles[x,y-1] or BLOCKPLAYERMOVEFROMBELOW or BLOCKENEMYMOVEFROMBELOW;
+          fMap.Tiles[x,y+1]:=fMap.Tiles[x,y+1] or BLOCKPLAYERMOVEFROMABOVE or BLOCKENEMYMOVEFROMABOVE;
+        end;
+        LOADED_TILE_ARROW_DOWN:begin
+          fMap.Tiles[x,y]:=fMap.Tiles[x,y] or BLOCKPLAYERMOVEFROMBELOW or BLOCKENEMYMOVEFROMBELOW;
+          fMap.Tiles[x,y-1]:=fMap.Tiles[x,y-1] or BLOCKPLAYERMOVEFROMBELOW or BLOCKENEMYMOVEFROMBELOW;
+          fMap.Tiles[x+1,y]:=fMap.Tiles[x+1,y] or BLOCKPLAYERMOVEFROMRIGHT or BLOCKENEMYMOVEFROMRIGHT;
+          fMap.Tiles[x-1,y]:=fMap.Tiles[x-1,y] or BLOCKPLAYERMOVEFROMLEFT or BLOCKENEMYMOVEFROMLEFT;
+        end;
+        LOADED_TILE_ARROW_LEFT:begin
+          fMap.Tiles[x,y]:=fMap.Tiles[x,y] or BLOCKPLAYERMOVEFROMLEFT or BLOCKENEMYMOVEFROMLEFT;
+          fMap.Tiles[x+1,y]:=fMap.Tiles[x+1,y] or BLOCKPLAYERMOVEFROMLEFT or BLOCKENEMYMOVEFROMLEFT;
+          fMap.Tiles[x,y-1]:=fMap.Tiles[x,y-1] or BLOCKPLAYERMOVEFROMBELOW or BLOCKENEMYMOVEFROMBELOW;
+          fMap.Tiles[x,y+1]:=fMap.Tiles[x,y+1] or BLOCKPLAYERMOVEFROMABOVE or BLOCKENEMYMOVEFROMABOVE;
+        end;
+      end;
+    end;
   fPlayer:=TPlayer.Create(fMap);
   Entities.Add(fPlayer);
   for x:=0 to fMap.MonsterCount-1 do
     Entities.Add(TEnemy.Create(fMap,x));
-  Entities.HideColoredWalls(COLOR3);
+  Entities.HideColoredWalls(fPlayer.Color);
 end;
 
 destructor TPlay1Map.Destroy;
@@ -248,7 +280,12 @@ begin
             LOADED_TILE_DOORBUTTON4:s:='Button4';
             LOADED_TILE_DOORBUTTON5:s:='Button5';
             LOADED_TILE_DOORBUTTON6:s:='Button6';
-            LOADED_TILE_SHORTWALL:s:='ColorWall';
+            LOADED_TILE_SHORTWALL:s:='ShortWall';
+            LOADED_TILE_MONSTERWALL:s:='EnemyBlock';
+            LOADED_TILE_ARROW_UP:s:='ArrowUp';
+            LOADED_TILE_ARROW_RIGHT:s:='ArrowRight';
+            LOADED_TILE_ARROW_DOWN:s:='ArrowDown';
+            LOADED_TILE_ARROW_LEFT:s:='ArrowLeft';
             else s:='Floor';
           end;
           ti:=IndexOfTile(s)*TILESIZE;
